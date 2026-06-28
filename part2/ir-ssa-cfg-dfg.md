@@ -77,6 +77,16 @@ CFG 可以回答：
 
 在可视化中，CFG 适合解释复杂函数内部逻辑，尤其是条件分支、循环和异常处理较多的代码。但在大型系统层面，直接展示所有函数的 CFG 通常没有意义。更常见的方式是把 CFG 作为底层分析数据，只在需要解释某个复杂函数或安全路径时展示。
 
+```mermaid
+flowchart TD
+  Start([Start]) --> Base["base = count * 100"]
+  Base --> Cond{"vip ?"}
+  Cond -->|true| Vip["return base - 20"]
+  Cond -->|false| Normal["return base"]
+  Vip --> End([End])
+  Normal --> End
+```
+
 ## DFG：数据依赖
 
 数据流图（Data Flow Graph, DFG）关注值如何产生、传播和使用。
@@ -104,6 +114,16 @@ DFG 可以回答：
 - 用户输入是否影响敏感操作。
 - 某个返回值依赖哪些参数。
 - 数据是否经过必要校验。
+
+```mermaid
+flowchart LR
+  Req["request.getParameter(name)"] --> Name["name"]
+  Name --> SQL["sql 拼接"]
+  SQL --> Exec["jdbc.execute(sql)"]
+  Name -. 未校验输入 .-> Risk["潜在注入风险"]
+```
+
+> 后续 AI 配图备注：可生成一张“同一段代码对应 CFG 与 DFG 两种视角”的对照图，左侧突出控制分支，右侧突出数据从输入流向 Sink。
 
 ## PDG：控制依赖与数据依赖的结合
 
@@ -166,3 +186,10 @@ IR、CFG、DFG 可以支撑一些更强的检查：
 AST 和符号表让工具理解代码结构和语义，IR、SSA、CFG、DFG 让工具进一步理解执行路径和数据传播。它们是安全分析、测试选择、影响面分析和 AI Review 的底层能力。
 
 到这里，第二篇已经从源码文本讲到了程序行为的基础表示。下一篇会进入程序分析与代码图谱：如何把静态、动态和变更数据组织成可查询、可视化的软件事实。
+
+## 延伸阅读与参考资料
+
+- [LLVM Language Reference Manual](https://llvm.org/docs/LangRef.html)：LLVM IR 的官方语言参考。
+- [LLVM Passes](https://llvm.org/docs/Passes.html)：LLVM 分析和转换 Pass 列表。
+- [CodeQL Data Flow Analysis](https://codeql.github.com/docs/writing-codeql-queries/about-data-flow-analysis/)：从安全分析角度理解数据流。
+- [Static Single Assignment Form](https://en.wikipedia.org/wiki/Static_single-assignment_form)：SSA 基础概念。

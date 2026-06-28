@@ -12,6 +12,20 @@
 
 代码图谱的目标不是把所有东西都画出来，而是建立一个统一事实层。图只是它的一种输出方式。
 
+```mermaid
+flowchart LR
+  Repo["Repository"] -->|contains| File["File"]
+  File -->|contains| Class["Class"]
+  Class -->|contains| Method["Method"]
+  Method -->|calls| Callee["Method"]
+  Test["TestCase"] -->|covers| Method
+  Commit["Commit/PR"] -->|changes| Method
+  Team["Team/Owner"] -->|owns| Class
+  Trace["Trace/Span"] -->|observes| Method
+```
+
+> 后续 AI 配图备注：可生成一张“代码图谱节点和边”的海报式解释图，节点颜色区分代码、测试、运行时、变更、组织五类实体。
+
 ## 节点设计
 
 常见节点包括：
@@ -150,3 +164,10 @@ Agent 可以用图谱回答：
 代码图谱把静态结构、动态运行、变更历史和组织信息组织成统一事实层。节点、边和属性不是为了画一张大图，而是为了支持查询、解释和验证。
 
 下一章会讨论如何把图谱和分析结果表达给人：可视化不应停留在漂亮图形，而要变成可追溯的工程证据。
+
+## 延伸阅读与参考资料
+
+- [Backstage Catalog Graph](https://backstage.io/docs/features/software-catalog/creating-the-catalog-graph/)：软件目录中实体关系图的参考。
+- [CodeQL About CodeQL](https://codeql.github.com/docs/codeql-overview/about-codeql/)：把代码建模成可查询数据库的代表性工具。
+- [Neo4j Graph Data Modeling](https://neo4j.com/docs/getting-started/data-modeling/)：图数据建模基础参考。
+- [OpenTelemetry Traces](https://opentelemetry.io/docs/concepts/signals/traces/)：运行时 Trace 如何进入图谱的参考。

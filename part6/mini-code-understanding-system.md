@@ -4,14 +4,20 @@
 
 这个系统不追求覆盖所有语言和所有框架，也不追求做成商业平台。它的目标是跑通一条最小闭环：
 
-```text
-采集源码结构
-  -> 构建代码图谱
-  -> 分析变更影响
-  -> 展示可视化视图
-  -> 提供 Agent 查询接口
-  -> 生成 AI 修改后的验证报告
+```mermaid
+flowchart LR
+  Repo["源码仓库"] --> Collector["采集源码结构"]
+  Collector --> Graph["构建代码图谱"]
+  Diff["Git Diff"] --> Impact["变更影响分析"]
+  Graph --> Impact
+  Graph --> UI["可视化界面"]
+  Graph --> API["Agent 查询接口"]
+  Impact --> Report["验证报告"]
+  API --> Agent["AI Agent"]
+  Agent --> Report
 ```
+
+> 后续 AI 配图备注：可生成一张“Mini Code Understanding Platform”的系统架构图，包含 collector、graph、analysis、ui、agent-api、report 六个模块。
 
 只要这条链路跑通，读者就能把本书前面讨论的原理落到工程实现里。
 
@@ -161,3 +167,10 @@ properties
 本篇实践的目标不是把所有概念一次性做完，而是完成从代码到图谱、从变更到影响面、从影响面到 AI Review 证据的最小实现。
 
 下一章先从第一步开始：采集源码结构。
+
+## 延伸阅读与参考资料
+
+- [JavaParser](https://javaparser.org/)：Java 源码解析实践工具。
+- [Tree-sitter](https://tree-sitter.github.io/tree-sitter/)：多语言增量解析工具。
+- [Mermaid Flowcharts](https://mermaid.js.org/syntax/flowchart.html)：实践项目中绘制流程图的轻量方式。
+- [Model Context Protocol](https://modelcontextprotocol.io/)：后续将图谱查询能力暴露给 Agent 的接口参考。

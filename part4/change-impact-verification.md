@@ -4,6 +4,21 @@
 
 一次代码修改真正的风险，通常不在 Diff 本身，而在 Diff 连接出去的关系网络里。改动了哪个方法只是起点；这个方法被哪些入口调用、影响哪些测试、涉及哪些资源、是否处于高频运行路径，才决定验证策略。
 
+```mermaid
+flowchart LR
+  Diff["Git Diff"] --> Entity["变更实体<br/>方法/类/配置/资源"]
+  Entity --> Callers["反向调用链"]
+  Entity --> Resources["资源依赖"]
+  Callers --> Entrypoints["业务入口"]
+  Resources --> Entrypoints
+  Entity --> Tests["相关测试"]
+  Entrypoints --> Risk["风险分级"]
+  Tests --> Report["影响面报告"]
+  Risk --> Report
+```
+
+> 后续 AI 配图备注：可生成一张“PR 页面中的影响面分析报告”界面 mockup，突出变更实体、影响路径、建议测试和风险标签。
+
 ## 为什么 Diff 不够
 
 Diff 只能告诉我们“改了什么”，不能完整告诉我们“影响了什么”。
@@ -141,3 +156,10 @@ AI 修改后的验证报告应该至少回答：
 变更影响分析把 Diff、调用图、依赖图、测试覆盖、运行时证据和历史变更连接起来。它让团队从“看改了什么”升级为“知道影响谁、怎么验证”。
 
 在 AI 时代，影响面分析会成为 AI Review 的核心证据层。下一章讨论另一个高价值场景：架构理解与遗留系统改造。
+
+## 延伸阅读与参考资料
+
+- [Azure Pipelines Test Impact Analysis](https://learn.microsoft.com/en-us/azure/devops/pipelines/test/test-impact-analysis?view=azure-devops)：变更影响测试选择的官方资料。
+- [Launchable Predictive Test Selection](https://help.launchableinc.com/features/predictive-test-selection/)：预测式测试选择产品资料。
+- [Codecov Pull Request Comments](https://docs.codecov.com/docs/pull-request-comments)：PR 中展示覆盖率变化的参考。
+- [CodeScene Change Coupling](https://codescene.io/docs/guides/technical/change-coupling.html)：变更耦合分析的工程实践参考。

@@ -61,19 +61,21 @@ Parser 会根据语言语法规则，把 Token 组织成树。不同工具可能
 
 AST 通常是一棵树：
 
-```text
-MethodDeclaration(add)
-  ReturnType(int)
-  Parameter(a:int)
-  Parameter(b:int)
-  Block
-    ReturnStatement
-      BinaryExpression(+)
-        Name(a)
-        Name(b)
+```mermaid
+flowchart TB
+  M["MethodDeclaration: add"] --> R["ReturnType: int"]
+  M --> P1["Parameter: a:int"]
+  M --> P2["Parameter: b:int"]
+  M --> B["Block"]
+  B --> RS["ReturnStatement"]
+  RS --> E["BinaryExpression: +"]
+  E --> A["Name: a"]
+  E --> BB["Name: b"]
 ```
 
 这棵树表达的是代码结构，而不是排版格式。工具可以从根节点向下遍历，也可以查找特定类型的节点。例如查找所有 `MethodDeclaration`，就能得到文件里的方法列表；查找所有 `MethodCallExpr`，就能得到候选调用表达式。
+
+> 后续 AI 配图备注：可生成一张“源码文本到 Token 再到 AST 树”的教学插图，左侧是 Java 小函数，中间是 Token 列表，右侧是 AST 节点树。
 
 ## AST 能回答的问题
 
@@ -170,3 +172,11 @@ Agent 上下文工程需要知道“哪些文件和符号与任务相关”。AS
 AST 把源码从文本变成树，是代码可视化和代码理解系统的第一层数据基础。它适合定位结构、识别语法模式和支持自动化修改，但不负责完整语义和运行时事实。
 
 下一章会在 AST 之上继续推进：当我们知道代码结构后，还需要知道名字指向谁、类型是什么、引用在哪里。这就是符号表、作用域和类型关系要解决的问题。
+
+## 延伸阅读与参考资料
+
+- [ANTLR](https://www.antlr.org/)：通过语法规则生成 Lexer 和 Parser。
+- [Tree-sitter](https://tree-sitter.github.io/tree-sitter/)：适合编辑器和增量解析场景的解析器。
+- [JavaParser](https://javaparser.org/)：Java 代码解析和 AST 分析工具。
+- [Babel Parser](https://babeljs.io/docs/babel-parser)：JavaScript 生态常用解析器。
+- [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API)：TypeScript AST 和类型信息访问入口。

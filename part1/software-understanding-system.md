@@ -6,6 +6,18 @@
 
 本章从系统视角拆解代码可视化：一个有用的代码可视化系统应该有哪些层次。
 
+```mermaid
+flowchart TB
+  Data[数据采集层<br/>源码/构建/运行时/变更/组织] --> Analysis[程序分析层<br/>AST/符号/调用/Trace/Coverage]
+  Analysis --> Graph[图谱建模层<br/>节点/边/属性/证据来源]
+  Graph --> Query[可视化与查询层<br/>图/路径/报告/API]
+  Query --> Workflow[工程集成层<br/>IDE/CI/PR/APM/AI Agent]
+  Workflow --> Feedback[反馈更新<br/>测试结果/Review/运行时数据]
+  Feedback --> Data
+```
+
+> 后续 AI 配图备注：可生成一张“软件理解系统分层架构图”的高清 PNG，用于替代 Mermaid。图中应体现数据采集、程序分析、图谱建模、可视化查询、工程集成五层闭环。
+
 ## 数据采集层
 
 第一层是数据采集。没有可靠的数据，后面的分析和可视化都会变成猜测。
@@ -126,3 +138,9 @@ AI Agent 需要的是结构化上下文：
 代码可视化的最终形态不应该是一组静态图片，而应该是一套软件理解系统。它包含数据采集、程序分析、图谱建模、可视化查询和工程集成五个层次。
 
 后续章节会沿着这条路径展开：先讲源码如何被结构化，再讲静态和动态分析如何提取代码事实，然后讲代码图谱如何建模，最后讨论这些能力如何服务核心工程场景和 AI 时代的新应用。
+
+## 延伸阅读与参考资料
+
+- [OpenTelemetry Observability Primer](https://opentelemetry.io/docs/concepts/observability-primer/)：理解日志、指标、Trace 等运行时观测数据的基础资料。
+- [Backstage Software Catalog](https://backstage.io/docs/features/software-catalog/)：软件目录、实体关系和组织上下文建模的参考。
+- [GitHub Docs: About code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)：理解代码 Owner 如何进入工程治理流程。

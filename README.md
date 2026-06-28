@@ -34,15 +34,19 @@ AI 可以更快地生成和修改代码，但它也带来了新的问题：
 
 全书围绕下面这条链路展开：
 
-```text
-为什么需要代码可视化
-  -> 源码如何变成结构化数据
-  -> 程序行为如何被静态和动态分析
-  -> 代码事实如何被建模成图谱
-  -> 图谱如何被可视化和查询
-  -> 核心工程场景如何使用这些事实
-  -> AI 时代如何把它们升级为 Agent 上下文和 Review 证据
+```mermaid
+flowchart LR
+  Problem[工程问题] --> Source[源码结构化]
+  Source --> Analysis[静态/动态/变更分析]
+  Analysis --> Graph[代码图谱]
+  Graph --> Viz[可视化与查询]
+  Viz --> Scene[核心工程场景]
+  Graph --> Agent[AI Agent 上下文]
+  Scene --> Review[Review 与验证证据]
+  Agent --> Review
 ```
+
+> 后续 AI 配图备注：可生成一张“人类开发者 + AI Agent 共同围绕代码图谱工作的主视觉图”，适合作为首页头图。画面重点是源码、运行时、测试、PR、Agent 汇聚到一张软件理解地图，风格应偏技术书籍封面，不要做营销海报。
 
 读完这本书，你应该能够：
 
@@ -64,6 +68,15 @@ AI 可以更快地生成和修改代码，但它也带来了新的问题：
 如果你更关注原理，建议按目录顺序阅读前 3 篇；如果你更关注工程落地，可以重点阅读“代码库理解与上下文构建”“变更影响分析与验证”“架构理解与遗留系统改造”；如果你关注 AI 编程工具，则可以在理解代码图谱基础后阅读第 5 篇。
 
 实践部分会构建一个最小代码理解系统，目标不是做一个完整商业平台，而是把“源码解析 -> 图谱构建 -> 影响面分析 -> 可视化展示 -> Agent 查询接口 -> 验证报告”这条链路跑通。
+
+## 延伸阅读与参考资料
+
+- [ANTLR](https://www.antlr.org/)：语法分析器生成工具，可用于理解 Lexer、Parser 和语法规则。
+- [Tree-sitter](https://tree-sitter.github.io/tree-sitter/)：面向代码编辑器和代码分析场景的增量解析器。
+- [OpenTelemetry Traces](https://opentelemetry.io/docs/concepts/signals/traces/)：理解 Trace、Span 和运行时链路观测的官方资料。
+- [CodeQL Data Flow Analysis](https://codeql.github.com/docs/writing-codeql-queries/about-data-flow-analysis/)：理解数据流和污点分析的官方资料。
+- [GitHub Copilot: Explore a codebase](https://docs.github.com/en/copilot/tutorials/explore-a-codebase)：AI 辅助代码库探索的官方教程。
+- [SWE-bench](https://github.com/swe-bench/SWE-bench)：仓库级软件工程任务评测基准。
 
 ## 交流联系
 

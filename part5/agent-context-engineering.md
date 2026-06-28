@@ -4,6 +4,21 @@ Agent 上下文工程关注如何给 AI 提供正确、充分、可验证的代�
 
 如果没有上下文工程，Agent 很容易变成“会写代码的搜索器”：它能读文件、改文件，但不一定知道哪些文件重要、哪些边界不能跨、哪些测试需要运行。上下文工程要解决的就是这个问题。
 
+```mermaid
+flowchart TB
+  Task["任务/Issue"] --> Intent["意图和边界"]
+  Intent --> Retrieval["语义检索"]
+  Intent --> GraphQuery["代码图谱查询"]
+  GraphQuery --> Symbols["符号/调用/测试/架构规则"]
+  Retrieval --> Docs["相关文档和代码片段"]
+  Symbols --> Pack["Agent 上下文包"]
+  Docs --> Pack
+  Pack --> Agent["AI Agent 修改代码"]
+  Agent --> Evidence["查询轨迹与验证证据"]
+```
+
+> 后续 AI 配图备注：可生成一张“Agent 在修改前先查询代码图谱”的流程插画，表现任务、检索、图谱查询、上下文包、修改、验证报告的闭环。
+
 ## 上下文窗口不等于代码理解
 
 把更多文件塞进上下文，并不等于更好的理解。上下文太少会遗漏关键关系，上下文太多会引入噪声，让 Agent 注意力分散。
@@ -137,3 +152,11 @@ Agent 查过什么，也应该被记录。查询轨迹可以帮助 Reviewer 判�
 Agent 上下文工程的目标，是让 AI 在正确边界内获得足够证据。它需要结合语义检索、符号查询、代码图谱、变更历史、测试覆盖和架构规则。
 
 下一章会进一步讨论：代码图谱如何成为 Agent 查询上下文的核心基础设施。
+
+## 延伸阅读与参考资料
+
+- [GitHub Copilot: Explore a codebase](https://docs.github.com/en/copilot/tutorials/explore-a-codebase)：AI 辅助探索代码库的官方教程。
+- [VS Code: How Copilot understands your workspace](https://code.visualstudio.com/docs/agents/reference/workspace-context)：工作区上下文、搜索和 Agent 工具使用方式。
+- [GitHub Copilot cloud agent](https://docs.github.com/copilot/concepts/agents/cloud-agent/about-cloud-agent)：云端编码 Agent 的官方概念说明。
+- [SWE-bench](https://github.com/swe-bench/SWE-bench)：真实仓库 Issue 到补丁的评测基准。
+- [Retrieval-Augmented Code Generation Survey](https://arxiv.org/html/2510.04905v1)：仓库级代码生成中的 RAG 综述。

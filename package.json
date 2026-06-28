@@ -1,0 +1,12 @@
+{
+  "name": "code-visualization-book",
+  "private": true,
+  "scripts": {
+    "build": "honkit build .",
+    "serve": "honkit serve . --port 4000"
+  },
+  "devDependencies": {
+    "honkit": "6.2.2",
+    "honkit-plugin-mermaid-md-adoc": "0.0.8"
+  }
+}
