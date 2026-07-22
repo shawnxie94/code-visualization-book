@@ -202,6 +202,28 @@ timestamp
 3. 比较“只给 DiscountPolicy.java”与完整上下文包的失败风险。
 4. 将 `agent-context-pack.json` 改成更短但信息不丢的版本。
 
+## 常见问题：上下文工程
+
+### 上下文窗口更大是否就够？
+
+不够。需要结构化符号、边界与轨迹。
+
+### 要不要把全仓源码塞进 prompt？
+
+不要。按 seed/include/exclude 切片。
+
+## 本章检查清单
+
+1. 上下文包字段是否完整
+2. 是否包含 related_tests 与 rules
+3. 是否记录 query_trace
+
+## 本章导航
+
+- 上一章：[为什么 AI 时代更需要代码理解](why-code-understanding-matters-in-ai-era.md)
+- 下一章：[代码图谱如何服务 AI Agent](code-graph-for-ai-agent.md)
+- 相关章：[给 AI Agent 的查询接口](../part6/query-interface-for-ai-agent.md)；[AI 修改后的验证报告](../part6/ai-change-verification-report.md)
+
 ## 延伸阅读与参考资料
 
 - [GitHub Copilot: Explore a codebase](https://docs.github.com/en/copilot/tutorials/explore-a-codebase)。资料卡：`../docs/research-cards/rc-github-copilot-explore.md`

@@ -213,6 +213,12 @@ if exists edge depends_on(pricing, payment): fail
 2. 给出 1 个会漏报、1 个会误报的场景，并说明如何在图谱中标注置信度。
 3. 写一条架构规则检查：`pricing` 不得依赖 `payment`。
 
+## 本章导航
+
+- 上一章：[IR、SSA、CFG 与 DFG](../part2/ir-ssa-cfg-dfg.md)
+- 下一章：[动态分析：运行起来之后才能知道什么](dynamic-analysis.md)
+- 相关章：[变更影响分析与验证](../part4/change-impact-verification.md)；[构建代码图谱](../part6/build-code-graph.md)
+
 ## 延伸阅读与参考资料
 
 - [CodeQL docs](https://codeql.github.com/docs/)：查询式静态分析。资料卡：`../docs/research-cards/rc-codeql-dataflow.md`

@@ -229,6 +229,22 @@ Agent 面对该错误应收缩查询，而不是改去全文读取仓库绕过�
 2. 设计未知符号与低置信结果的错误返回。
 3. 记录 PR-42 的完整 query_trace（至少 4 步）。
 
+## 常见问题：查询接口
+
+### REST 还是 MCP？
+
+都能；关键是工具契约稳定与可审计轨迹。
+
+### 图过期如何处理？
+
+返回结构化错误并提示重建索引。
+
+## 本章导航
+
+- 上一章：[构建可视化界面](build-visualization-ui.md)
+- 下一章：[AI 修改后的验证报告](ai-change-verification-report.md)
+- 相关章：[代码图谱：节点、边与属性](../part3/code-graph-model.md)；[Agent 上下文工程](../part5/agent-context-engineering.md)
+
 ## 延伸阅读与参考资料
 
 - [Model Context Protocol](https://modelcontextprotocol.io/)。资料卡：`../docs/research-cards/rc-mcp.md`

@@ -187,6 +187,22 @@ flowchart TB
 2. 说明为什么只有展示层、没有采集/图谱层时系统不可持续。
 3. 给你们团队的现状自评：L1-L4 哪一级，缺什么。
 
+## 常见问题：软件理解系统
+
+### 有图是不是就有系统？
+
+不是。缺采集、图谱更新与工程集成时，图只是展览。
+
+### 必须一开始就做平台吗？
+
+不必。先跑通最小闭环，再平台化。
+
+## 本章导航
+
+- 上一章：[代码可视化到底可视化什么](what-to-visualize.md)
+- 下一章：[编译器视角下的代码结构](../part2/compiler-view.md)
+- 相关章：[代码图谱：节点、边与属性](../part3/code-graph-model.md)
+
 ## 延伸阅读与参考资料
 
 - [OpenTelemetry](https://opentelemetry.io/docs/concepts/signals/traces/)：运行时信号如何进入事实层。资料卡：`../docs/research-cards/rc-opentelemetry-traces.md`

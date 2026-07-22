@@ -188,6 +188,22 @@ ui/ 最小页面或静态报告页
 2. 说明为何先 JSON 后图数据库。
 3. 给 collector/graph/analysis/api/report 各写一句话职责。
 
+## 常见问题：最小系统
+
+### 和商业平台差距在哪？
+
+商业平台强调规模、权限、多仓；本书优先可讲解闭环。
+
+### 可以跳过 UI 吗？
+
+可先报告后 UI，但查询与报告不能省。
+
+## 本章导航
+
+- 上一章：[从代码可视化到软件理解基础设施](../part5/software-understanding-infrastructure.md)
+- 下一章：[采集源码结构](collect-source-structure.md)
+- 相关章：[代码图谱：节点、边与属性](../part3/code-graph-model.md)；[Agent 上下文工程](../part5/agent-context-engineering.md)
+
 ## 延伸阅读与参考资料
 
 - [JavaParser](https://javaparser.org/)。资料卡：`../docs/research-cards/rc-javaparser.md`

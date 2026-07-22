@@ -200,6 +200,12 @@ Collectors (AST/graph/diff/test/trace)
 2. 给出 4 个成功度量，并说明如何采集。
 3. 解释为何 IDE/CI/Agent 应共享同一事实层。
 
+## 本章导航
+
+- 上一章：[AI 辅助重构与系统迁移](ai-assisted-refactoring-and-migration.md)
+- 下一章：[构建一个最小代码理解系统](../part6/mini-code-understanding-system.md)
+- 相关章：[给 AI Agent 的查询接口](../part6/query-interface-for-ai-agent.md)；[AI 修改后的验证报告](../part6/ai-change-verification-report.md)
+
 ## 延伸阅读与参考资料
 
 - [Backstage](https://backstage.io/docs/overview/what-is-backstage/)。资料卡：`../docs/research-cards/rc-backstage-catalog.md`

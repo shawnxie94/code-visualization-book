@@ -207,6 +207,12 @@ claim
 2. 指出一张“很好看但不可审计”的图可能缺少哪些字段。
 3. 为 AI 结论设计必须附带的最小证据包字段。
 
+## 本章导航
+
+- 上一章：[代码图谱：节点、边与属性](code-graph-model.md)
+- 下一章：[代码库理解与上下文构建](../part4/codebase-understanding.md)
+- 相关章：[变更影响分析与验证](../part4/change-impact-verification.md)；[构建代码图谱](../part6/build-code-graph.md)
+
 ## 延伸阅读与参考资料
 
 - [Nielsen Norman Group: Minimize Cognitive Load](https://www.nngroup.com/articles/minimize-cognitive-load/)：信息呈现与认知负荷。

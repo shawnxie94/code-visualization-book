@@ -211,6 +211,12 @@ emit report(entities, paths, tests, risk, actions)
 2. 对 PR-42 跑一遍反向路径，核对是否到达 `OrderController.create`。
 3. 给风险规则打分并解释 reasons。
 
+## 本章导航
+
+- 上一章：[构建代码图谱](build-code-graph.md)
+- 下一章：[构建可视化界面](build-visualization-ui.md)
+- 相关章：[代码图谱：节点、边与属性](../part3/code-graph-model.md)；[Agent 上下文工程](../part5/agent-context-engineering.md)
+
 ## 延伸阅读与参考资料
 
 - [git diff](https://git-scm.com/docs/git-diff)。资料卡：`../docs/research-cards/rc-git-diff.md`

@@ -177,6 +177,12 @@ AI 编程工具加快了生成和修改，但也放大了验证压力：
 2. 对比“文档 / 搜索 / 同事经验 / 代码图谱”在该修改上的优劣。
 3. 写一段 5 行说明：为什么 AI 修改速度上升会放大验证压力。
 
+## 本章导航
+
+- 上一章：无（本书起始章）
+- 下一章：[代码可视化到底可视化什么](what-to-visualize.md)
+- 相关章：[代码图谱：节点、边与属性](../part3/code-graph-model.md)
+
 ## 延伸阅读与参考资料
 
 - [SWE-bench](https://github.com/swe-bench/SWE-bench)：仓库级软件工程任务说明“改对代码”需要仓库上下文与验证。资料卡：`../docs/research-cards/rc-swe-bench.md`

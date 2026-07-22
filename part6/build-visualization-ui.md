@@ -272,6 +272,12 @@ badge risk.level + risk.reasons
 2. 说明为何默认不能渲染全仓大图。
 3. 为节点详情列出必须字段。
 
+## 本章导航
+
+- 上一章：[构建变更影响分析](build-change-impact-analysis.md)
+- 下一章：[给 AI Agent 的查询接口](query-interface-for-ai-agent.md)
+- 相关章：[代码图谱：节点、边与属性](../part3/code-graph-model.md)；[Agent 上下文工程](../part5/agent-context-engineering.md)
+
 ## 延伸阅读与参考资料
 
 - [Mermaid docs](https://mermaid.js.org/)：最小可交付图示渲染。

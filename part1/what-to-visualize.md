@@ -209,6 +209,28 @@ OrderServiceTest covers OrderService.createOrder
 2. 指出哪两类事实无法仅靠 AST 获得。
 3. 为代码图谱列出至少 6 个节点类型候选。
 
+## 常见问题：可视化对象
+
+### 是不是把所有事实都画出来最好？
+
+不是。应先问题后对象；事实过多会噪声化。
+
+### 只要 AST 够不够？
+
+不够。行为、演进、组织事实通常需要其他来源。
+
+## 本章检查清单
+
+1. 能否按五类事实分类任意一个工程问题
+2. 是否避免“只画目录树/只画全仓大图”
+3. 是否为 PR-42 写出最小对象集
+
+## 本章导航
+
+- 上一章：[为什么需要代码可视化](why-code-visualization.md)
+- 下一章：[从图形展示到软件理解系统](software-understanding-system.md)
+- 相关章：[代码图谱：节点、边与属性](../part3/code-graph-model.md)
+
 ## 延伸阅读与参考资料
 
 - [Backstage Software Catalog](https://backstage.io/docs/features/software-catalog/)：组织与服务元数据如何目录化。资料卡：`../docs/research-cards/rc-backstage-catalog.md`

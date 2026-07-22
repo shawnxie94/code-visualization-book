@@ -193,6 +193,22 @@ flowchart TD
 2. 写解析失败时的错误记录字段。
 3. 说明候选调用与精确调用的差别，并指出下一章如何消解。
 
+## 常见问题：采集
+
+### 候选调用要不要直接当 calls？
+
+不要。先保留候选，消解后再提升。
+
+### ID 变了怎么办？
+
+显式迁移映射，禁止静默换 ID。
+
+## 本章导航
+
+- 上一章：[构建一个最小代码理解系统](mini-code-understanding-system.md)
+- 下一章：[构建代码图谱](build-code-graph.md)
+- 相关章：[代码图谱：节点、边与属性](../part3/code-graph-model.md)；[Agent 上下文工程](../part5/agent-context-engineering.md)
+
 ## 延伸阅读与参考资料
 
 - [JavaParser](https://javaparser.org/)。资料卡：`../docs/research-cards/rc-javaparser.md`

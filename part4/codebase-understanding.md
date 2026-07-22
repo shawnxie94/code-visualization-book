@@ -196,6 +196,28 @@ Issue：`VIP 用户投诉折扣不对`
 2. 生成一份给人与 Agent 共用的上下文摘要（10 行内）。
 3. 说明为何“先通读仓库”通常不是最优策略。
 
+## 常见问题：代码库理解
+
+### 和新手 onboarding 文档什么关系？
+
+文档给意图，图谱给可验证事实；二者互补。
+
+### 30 分钟流程可以跳过测试吗？
+
+不建议。没有表征测试，后续改造缺少护栏。
+
+## 本章检查清单
+
+1. 是否完成入口→路径→测试→摘要
+2. 是否使用上下文摘要模板
+3. 是否避免只搜关键字
+
+## 本章导航
+
+- 上一章：[可视化表达：从图到证据](../part3/visualization-as-evidence.md)
+- 下一章：[变更影响分析与验证](change-impact-verification.md)
+- 相关章：[AI 生成代码的 Review 证据层](../part5/ai-code-review-evidence.md)；[构建变更影响分析](../part6/build-change-impact-analysis.md)
+
 ## 延伸阅读与参考资料
 
 - [GitHub Copilot: Explore a codebase](https://docs.github.com/en/copilot/tutorials/explore-a-codebase)。资料卡：`../docs/research-cards/rc-github-copilot-explore.md`

@@ -211,6 +211,12 @@ AI 很容易完成第 1 层并宣称成功。出版级工程实践要求至少�
 2. 指出 2 类不应交给无约束 Agent 的改造。
 3. 设计迁移前后对比表：路径、规则、测试、行为。
 
+## 本章导航
+
+- 上一章：[AI 生成代码的 Review 证据层](ai-code-review-evidence.md)
+- 下一章：[从代码可视化到软件理解基础设施](software-understanding-infrastructure.md)
+- 相关章：[给 AI Agent 的查询接口](../part6/query-interface-for-ai-agent.md)；[AI 修改后的验证报告](../part6/ai-change-verification-report.md)
+
 ## 延伸阅读与参考资料
 
 - [Strangler Fig](https://martinfowler.com/bliki/StranglerFigApplication.html)。资料卡：`../docs/research-cards/rc-strangler-fig.md`

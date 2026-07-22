@@ -248,6 +248,28 @@ apply -> calculateTotal -> createOrder -> create
 3. 若删除 `OrderServiceTest`，风险等级与建议动作如何变化？
 4. 把影响面报告改写成 PR 评论的 8 行摘要。
 
+## 常见问题：影响面
+
+### Diff 绿了是不是就没影响？
+
+否。影响在调用路径与测试，不只在 diff 行。
+
+### 风险 medium 如何决策？
+
+金额语义变化需测更新与人工确认业务值。
+
+## 本章检查清单
+
+1. 变更实体是否方法级
+2. 路径/测试/规则是否齐全
+3. 报告是否可进入 PR
+
+## 本章导航
+
+- 上一章：[代码库理解与上下文构建](codebase-understanding.md)
+- 下一章：[架构理解与遗留系统改造](architecture-and-legacy-modernization.md)
+- 相关章：[AI 生成代码的 Review 证据层](../part5/ai-code-review-evidence.md)；[构建变更影响分析](../part6/build-change-impact-analysis.md)
+
 ## 延伸阅读与参考资料
 
 - [Git diff](https://git-scm.com/docs/git-diff)。资料卡：`../docs/research-cards/rc-git-diff.md`

@@ -205,6 +205,12 @@ assert callers(apply) includes calculateTotal
 2. 对 `discountPolicy.apply` 给出消解策略与 confidence。
 3. 列出 4 条图谱完整性校验。
 
+## 本章导航
+
+- 上一章：[采集源码结构](collect-source-structure.md)
+- 下一章：[构建变更影响分析](build-change-impact-analysis.md)
+- 相关章：[代码图谱：节点、边与属性](../part3/code-graph-model.md)；[Agent 上下文工程](../part5/agent-context-engineering.md)
+
 ## 延伸阅读与参考资料
 
 - [SQLite docs](https://www.sqlite.org/docs.html)。资料卡：`../docs/research-cards/rc-sqlite.md`

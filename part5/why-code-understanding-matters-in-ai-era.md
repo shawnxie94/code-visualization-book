@@ -195,6 +195,12 @@ rules: pricing-no-payment pass
 2. 用 SWE-bench 的仓库级设定，解释为何“单文件生成成功”不等于工程完成。
 3. 写一条团队政策：AI PR 合并前必须具备哪些证据。
 
+## 本章导航
+
+- 上一章：[架构理解与遗留系统改造](../part4/architecture-and-legacy-modernization.md)
+- 下一章：[Agent 上下文工程](agent-context-engineering.md)
+- 相关章：[给 AI Agent 的查询接口](../part6/query-interface-for-ai-agent.md)；[AI 修改后的验证报告](../part6/ai-change-verification-report.md)
+
 ## 延伸阅读与参考资料
 
 - [SWE-bench](https://github.com/swe-bench/SWE-bench)。资料卡：`../docs/research-cards/rc-swe-bench.md`

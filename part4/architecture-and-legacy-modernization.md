@@ -187,6 +187,12 @@ pricing must not depend on payment
 2. 用 Strangler Fig 思路，把“折扣配置化”拆成 3 个可验证小步。
 3. 列出改造前最小地图：依赖、关键路径、测试、规则。
 
+## 本章导航
+
+- 上一章：[变更影响分析与验证](change-impact-verification.md)
+- 下一章：[为什么 AI 时代更需要代码理解](../part5/why-code-understanding-matters-in-ai-era.md)
+- 相关章：[AI 生成代码的 Review 证据层](../part5/ai-code-review-evidence.md)；[构建变更影响分析](../part6/build-change-impact-analysis.md)
+
 ## 延伸阅读与参考资料
 
 - [Strangler Fig Application](https://martinfowler.com/bliki/StranglerFigApplication.html)。资料卡：`../docs/research-cards/rc-strangler-fig.md`

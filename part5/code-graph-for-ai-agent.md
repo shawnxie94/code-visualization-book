@@ -219,6 +219,28 @@ architecture_rules(module|id)
 2. 说明何时应降低 confidence 并要求人工确认。
 3. 比较 RAG-only 与 Graph+RAG 在“找 apply 调用方”任务上的差异。
 
+## 常见问题：Agent 查图
+
+### 工具失败返回空数组可以吗？
+
+应结构化报错，避免被当成“无影响”。
+
+### 最小工具集有哪些？
+
+find_symbol / callers / callees / impact / tests / rules。
+
+## 本章检查清单
+
+1. 工具响应是否含 trace_id
+2. 是否写入 query_trace
+3. 是否与验证报告字段对齐
+
+## 本章导航
+
+- 上一章：[Agent 上下文工程](agent-context-engineering.md)
+- 下一章：[AI 生成代码的 Review 证据层](ai-code-review-evidence.md)
+- 相关章：[给 AI Agent 的查询接口](../part6/query-interface-for-ai-agent.md)；[AI 修改后的验证报告](../part6/ai-change-verification-report.md)
+
 ## 延伸阅读与参考资料
 
 - [Model Context Protocol](https://modelcontextprotocol.io/)。资料卡：`../docs/research-cards/rc-mcp.md`

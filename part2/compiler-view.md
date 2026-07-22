@@ -182,6 +182,28 @@ double total = pricingService.calculateTotal(quantity, unitPrice, customerType);
 2. 说明词法、语法、语义各解决什么问题，缺一会发生什么误判。
 3. 解释为何 AI 补丁后应重新 parse/校验，而不是只看文本 diff。
 
+## 常见问题：编译视角
+
+### 是否需要实现完整编译器？
+
+不需要。本书借用前端思想提取可查询事实。
+
+### 后端代码生成重要吗？
+
+对代码理解主线次要；优先 AST/符号/IR 事实。
+
+## 本章检查清单
+
+1. 能否映射词法/语法/符号/IR 到本书章节
+2. 是否区分编译器目标与理解系统目标
+3. 是否知道后续从 AST 章开始深入
+
+## 本章导航
+
+- 上一章：[从图形展示到软件理解系统](../part1/software-understanding-system.md)
+- 下一章：[从字符到 AST](source-to-ast.md)
+- 相关章：[静态分析](../part3/static-analysis.md)；[采集源码结构](../part6/collect-source-structure.md)
+
 ## 延伸阅读与参考资料
 
 - [Java Language Specification](https://docs.oracle.com/javase/specs/jls/se17/html/index.html)：语言规则一级来源。

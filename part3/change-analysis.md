@@ -210,6 +210,12 @@ attach related edges for downstream impact
 2. 设计两个变更耦合指标，解释它们对 Agent 上下文选择的帮助。
 3. 说明重命名如何破坏“实体稳定 ID”，以及如何缓解。
 
+## 本章导航
+
+- 上一章：[动态分析：运行起来之后才能知道什么](dynamic-analysis.md)
+- 下一章：[代码图谱：节点、边与属性](code-graph-model.md)
+- 相关章：[变更影响分析与验证](../part4/change-impact-verification.md)；[构建代码图谱](../part6/build-code-graph.md)
+
 ## 延伸阅读与参考资料
 
 - [Git diff](https://git-scm.com/docs/git-diff)：行级变更输入。资料卡：`../docs/research-cards/rc-git-diff.md`

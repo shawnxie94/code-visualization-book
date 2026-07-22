@@ -180,6 +180,12 @@ Markdown：
 2. 设计 machine-readable JSON 与 Markdown 的字段映射表。
 3. 给出 merge 门禁伪策略，并说明为何不能完全自动免责。
 
+## 本章导航
+
+- 上一章：[给 AI Agent 的查询接口](query-interface-for-ai-agent.md)
+- 下一章：无（全书正文结束；请回到实践闭环复盘）
+- 相关章：[代码图谱：节点、边与属性](../part3/code-graph-model.md)；[Agent 上下文工程](../part5/agent-context-engineering.md)
+
 ## 延伸阅读与参考资料
 
 - [SARIF](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)。资料卡：`../docs/research-cards/rc-sarif.md`

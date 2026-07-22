@@ -414,6 +414,28 @@ AST 不会替代测试，也不会替代影响面分析；它只是让 Agent 从
 3. 设计 3 条 AST 级校验规则，用于检查 Agent 是否误改字符串字面量。
 4. 对比 Tree-sitter 与 JavaParser 在“教学可复现/Java 语义便利”上的取舍（参考资料卡）。
 
+## 常见问题：AST
+
+### AST 能直接当调用图吗？
+
+不能。调用边通常还要符号消解与类型信息。
+
+### 选 Tree-sitter 还是 JavaParser？
+
+看目标语言与是否需要语义；教学可用其一讲清流程。
+
+## 本章检查清单
+
+1. 能否说明字符串搜索的失败模式
+2. 能否描述 Token→AST 最小流程
+3. 能否指出 AST 对 PR-42 的边界
+
+## 本章导航
+
+- 上一章：[编译器视角下的代码结构](compiler-view.md)
+- 下一章：[符号表、作用域与类型关系](symbols-scopes-types.md)
+- 相关章：[静态分析](../part3/static-analysis.md)；[采集源码结构](../part6/collect-source-structure.md)
+
 ## 延伸阅读与参考资料
 
 - [Tree-sitter](https://tree-sitter.github.io/tree-sitter/)：增量解析与具体语法树。资料卡：`../docs/research-cards/rc-tree-sitter.md`

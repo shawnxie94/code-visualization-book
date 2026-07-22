@@ -269,6 +269,18 @@ reason = polymorphic_receiver
 2. 说明为何“同名 apply”不能直接当精确调用边。
 3. 用 LSP 的 go-to-definition / find-references 类比，写出图谱应支持的两条查询。
 
+## 本章检查清单
+
+1. 定义与引用是否能落到稳定 ID
+2. 是否处理同名/多态的 confidence
+3. Agent 上下文是否带 symbol_id 而非裸字符串
+
+## 本章导航
+
+- 上一章：[从字符到 AST](source-to-ast.md)
+- 下一章：[IR、SSA、CFG 与 DFG](ir-ssa-cfg-dfg.md)
+- 相关章：[静态分析](../part3/static-analysis.md)；[采集源码结构](../part6/collect-source-structure.md)
+
 ## 延伸阅读与参考资料
 
 - [JLS §6 Names](https://docs.oracle.com/javase/specs/jls/se17/html/jls-6.html)：名称与作用域一级规则。资料卡：`../docs/research-cards/rc-jls-names.md`

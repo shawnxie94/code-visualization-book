@@ -187,6 +187,12 @@ AI PR 证据层建议固定字段，便于 CI 与 UI 共用：
 2. 把模型说明“无风险”改写成必须附带的系统证据段落。
 3. 设计 CI 门禁：哪些证据缺失应 block merge。
 
+## 本章导航
+
+- 上一章：[代码图谱如何服务 AI Agent](code-graph-for-ai-agent.md)
+- 下一章：[AI 辅助重构与系统迁移](ai-assisted-refactoring-and-migration.md)
+- 相关章：[给 AI Agent 的查询接口](../part6/query-interface-for-ai-agent.md)；[AI 修改后的验证报告](../part6/ai-change-verification-report.md)
+
 ## 延伸阅读与参考资料
 
 - [GitHub status checks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/about-status-checks)

@@ -179,7 +179,7 @@ test:<Class>#<method>
 | related_tests(apply) | PricingServiceTest, OrderServiceTest |
 | architecture_rules(pricing) | pricing-no-payment = pass |
 
-把这五条做成自动化契约测试，实践项目就不会“看起来有图、其实不可用”。
+把这五条做成自动化契约测试，实践项目就不会“看起来有图、却不可用”。
 
 ## 常见问题：代码图谱模型
 
@@ -219,6 +219,12 @@ test:<Class>#<method>
 1. 为 `mini-shop` 写出 5 个查询及其预期结果。
 2. 设计 `calls` 边的属性：source/confidence/evidence。
 3. 比较 JSON 与 SQLite 在教学原型中的优劣。
+
+## 本章导航
+
+- 上一章：[变更分析：系统是如何演进的](change-analysis.md)
+- 下一章：[可视化表达：从图到证据](visualization-as-evidence.md)
+- 相关章：[变更影响分析与验证](../part4/change-impact-verification.md)；[构建代码图谱](../part6/build-code-graph.md)
 
 ## 延伸阅读与参考资料
 

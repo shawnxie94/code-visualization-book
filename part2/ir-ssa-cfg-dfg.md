@@ -210,6 +210,28 @@ Tests: PricingServiceTest, OrderServiceTest
 2. 说明 `PR-42` 修改字面量时，影响的是控制结构还是数据依赖（或两者）。
 3. 举一个“有调用边但需要 DFG 才能解释风险”的例子（可用安全数据流直觉）。
 
+## 常见问题：CFG/DFG
+
+### 每个 PR 都要上 DFG 吗？
+
+否。调用图 + 测试常先够用；分支/污点场景再加深。
+
+### CFG 和调用图重复吗？
+
+不重复：CFG 方法内，调用图方法间。
+
+## 本章检查清单
+
+1. 能区分 CFG/DFG 问题域
+2. 能为 PR-42 字面量写数据依赖
+3. 知道何时升级分析深度
+
+## 本章导航
+
+- 上一章：[符号表、作用域与类型关系](symbols-scopes-types.md)
+- 下一章：[静态分析：不运行代码时能知道什么](../part3/static-analysis.md)
+- 相关章：[静态分析](../part3/static-analysis.md)；[采集源码结构](../part6/collect-source-structure.md)
+
 ## 延伸阅读与参考资料
 
 - [CodeQL Data Flow Analysis](https://codeql.github.com/docs/writing-codeql-queries/about-data-flow-analysis/)：数据流分析官方说明。资料卡：`../docs/research-cards/rc-codeql-dataflow.md`

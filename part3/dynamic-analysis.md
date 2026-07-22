@@ -199,6 +199,28 @@ createOrder -> charge(total)
 2. 若 Coverage 显示 VIP 测试覆盖了 `apply`，对 `PR-42` 风险判断有何帮助？
 3. 讨论采样 Trace 的主要偏差来源。
 
+## 常见问题：动态分析
+
+### 动态覆盖能替代静态图吗？
+
+不能。动态证明“发生过”，静态描述“可能”。
+
+### 测试没跑到是否表示不可能？
+
+否。未见不等于不可能。
+
+## 本章检查清单
+
+1. 动态边是否带 source/evidence
+2. 是否定义静动态合并策略
+3. 是否用路径解释支付副作用
+
+## 本章导航
+
+- 上一章：[静态分析：不运行代码时能知道什么](static-analysis.md)
+- 下一章：[变更分析：系统是如何演进的](change-analysis.md)
+- 相关章：[变更影响分析与验证](../part4/change-impact-verification.md)；[构建代码图谱](../part6/build-code-graph.md)
+
 ## 延伸阅读与参考资料
 
 - [OpenTelemetry Traces](https://opentelemetry.io/docs/concepts/signals/traces/)：Trace/Span 概念。资料卡：`../docs/research-cards/rc-opentelemetry-traces.md`
