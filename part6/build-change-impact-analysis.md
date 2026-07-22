@@ -117,6 +117,11 @@ flowchart TD
 输出必须与 `examples/mini-shop/artifacts/impact-report-pr-42.json` 字段兼容。
 
 
+影响面实现章的任务，是把 part4 的方法落成可运行算法：diff → 实体 → 反向路径 → 测试 → 风险 → 报告。重点不在炫技式路径枚举，而在输出字段与金标 artifacts 对齐，让 UI、Agent、验证报告都能消费同一 JSON。
+
+当你的结果与 `impact-report-pr-42.json` 不一致时，优先怀疑映射粗细（文件级 vs 方法级）和边方向（caller/callee 反了），而不是先调风险分数权重。
+
+
 ## 局限
 
 - 静态反向调用无法覆盖所有动态入口。
