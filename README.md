@@ -79,7 +79,7 @@ flowchart LR
 
 ## 阅读方式
 
-目录骨架已稳定：原理 → 图谱 → 三个核心场景 → AI 应用 → 实践闭环。出版完善重点在章内深度、权威引用与术语/图示资产，而不是继续扩展目录。
+全书主线为：原理 → 图谱 → 三个核心场景 → AI 应用 → 实践闭环。附录提供术语表、贯穿案例、版本勘误与资料卡索引。
 
 如果你更关注原理，建议按目录顺序阅读前 3 篇；如果你更关注工程落地，可以重点阅读“代码库理解与上下文构建”“变更影响分析与验证”“架构理解与遗留系统改造”；如果你关注 AI 编程工具，则可以在理解代码图谱基础后阅读第 5 篇。
 
@@ -87,11 +87,15 @@ flowchart LR
 
 全书统一使用模拟案例 `mini-shop`（见 `examples/mini-shop/`）贯穿原理、图谱、影响面和 Agent 上下文，不引入真实业务仓库。
 
-## 术语与版本
+## 术语、案例与版本
 
 - 术语表：[`docs/glossary.md`](docs/glossary.md)
+- 贯穿案例：[`docs/sample-case/README.md`](docs/sample-case/README.md) · [`examples/mini-shop/`](examples/mini-shop/)
 - 版本与勘误：[`docs/changelog.md`](docs/changelog.md)
-- 完成标准：[`docs/definition-of-done.md`](docs/definition-of-done.md)
+- 资料卡索引：[`docs/research-cards/README.md`](docs/research-cards/README.md)
+- 完成标准（编辑用）：[`docs/definition-of-done.md`](docs/definition-of-done.md)
+
+发现错误请在勘误入口记录章节与复现句；修正后写入 changelog。
 
 ## 延伸阅读与参考资料
 

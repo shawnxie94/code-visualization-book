@@ -117,3 +117,15 @@ examples/mini-shop/
 | `verification-report-pr-42.md` | 验证报告 |
 
 后续写作与实践实现应以这些契约为准。
+
+## 标准产物路径
+
+| 产物 | 路径 |
+| --- | --- |
+| 代码图谱 | `examples/mini-shop/artifacts/code-graph.json` |
+| PR diff | `examples/mini-shop/artifacts/pr-42.diff` |
+| 影响面报告 | `examples/mini-shop/artifacts/impact-report-pr-42.json` |
+| Agent 上下文包 | `examples/mini-shop/artifacts/agent-context-pack.json` |
+| 验证报告 | `examples/mini-shop/artifacts/verification-report-pr-42.md` |
+
+正文与练习引用上述路径时，实体 ID 以图谱为准（例如 `method:DiscountPolicy#apply`）。

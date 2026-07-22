@@ -35,3 +35,9 @@
     * [构建可视化界面](part6/build-visualization-ui.md)
     * [给 AI Agent 的查询接口](part6/query-interface-for-ai-agent.md)
     * [AI 修改后的验证报告](part6/ai-change-verification-report.md)
+
+* 附录
+    * [术语表](docs/glossary.md)
+    * [贯穿案例：mini-shop](docs/sample-case/README.md)
+    * [版本与勘误](docs/changelog.md)
+    * [资料卡索引](docs/research-cards/README.md)
