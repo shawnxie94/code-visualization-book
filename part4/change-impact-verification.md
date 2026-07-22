@@ -38,6 +38,31 @@ flowchart LR
 
 > 后续 AI 配图备注：可生成“PR 页面中的影响面分析报告”界面 mockup，突出变更实体、影响路径、建议测试和风险标签。
 
+## 跟做剧本：读完 PR-42 的 20 分钟
+
+把下面步骤当作本章主线，后文概念都是在解释这些步骤为何必要。
+
+1. **只看 diff（2 分钟）**  
+   打开 `examples/mini-shop/artifacts/pr-42.diff`。你只知道一行数字变了。此时还不能回答：谁调用它？支付会不会变？哪条测试会红？
+
+2. **映射变更实体（3 分钟）**  
+   把 hunk 映射到 `method:DiscountPolicy#apply`，而不是停在文件名。实体 ID 是后续一切查询的种子。
+
+3. **反向路径（5 分钟）**  
+   从图谱得到：
+   `apply -> calculateTotal -> createOrder -> create`  
+   并意识到 `charge(total)` 会消费新的总价，即使 diff 没碰 payment 文件。
+
+4. **相关测试（5 分钟）**  
+   定位 `PricingServiceTest` / `OrderServiceTest` 中 `180.0` 断言，标记为“需更新到 170.0”，而不是“测试全绿所以安全”。
+
+5. **风险与动作（5 分钟）**  
+   风险 medium：金额语义变化 + 测试过期 + 入口路径受影响。  
+   动作：更新断言、跑相关测试、在 PR 附路径与轨迹。
+
+完整 JSON 金标见 `examples/mini-shop/artifacts/impact-report-pr-42.json`。后文各节是在把上述五步工程化。
+
+
 ## 为什么 Diff 不够
 
 `PR-42` 的实质变更只有一行：

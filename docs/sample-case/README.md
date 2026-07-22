@@ -129,3 +129,25 @@ examples/mini-shop/
 | 验证报告 | `examples/mini-shop/artifacts/verification-report-pr-42.md` |
 
 正文与练习引用上述路径时，实体 ID 以图谱为准（例如 `method:DiscountPolicy#apply`）。
+
+## 全书跟做主线（建议 90 分钟）
+
+把下面顺序当作阅读/实践主线；各章细节都服务于这条链。
+
+| 步 | 动作 | 打开的文件 | 对应章节 |
+| --- | --- | --- | --- |
+| 1 | 读关键路径与测试断言（180.0） | `src/**`、两个 Test | part2/part4 |
+| 2 | 读 PR-42 diff | `artifacts/pr-42.diff` | part3 变更分析、part4 影响面 |
+| 3 | 对照图谱实体与调用边 | `artifacts/code-graph.json` | part3 图谱、part6 建图 |
+| 4 | 对照影响面报告 | `artifacts/impact-report-pr-42.json` | part4 影响面、part6 影响面实现 |
+| 5 | 读 Agent 上下文包 | `artifacts/agent-context-pack.json` | part5 上下文/查图 |
+| 6 | 对照验证报告并理解人工确认项 | `artifacts/verification-report-pr-42.md` | part5 Review、part6 验证报告 |
+
+金标数字：
+
+- 折扣：`0.9` → `0.85`
+- 示例总价：`180.0` → `170.0`
+- 变更实体：`method:DiscountPolicy#apply`
+- 架构规则：`pricing` 不得依赖 `payment`
+
+源码保持改前状态，便于你自己应用 diff 并复算。

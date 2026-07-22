@@ -20,6 +20,30 @@ AI 修改后应交付什么验证证据，才能让人和 CI 做出合并判断�
 
 验证报告是最小系统闭环的最后一环，也是 AI Coding 工具与 Review 流程的交接点。
 
+## 跟做：从 PR-42 产物生成一份可合并报告
+
+本节按仓库内真实文件走一遍，不要求你先实现完整平台。
+
+### 输入
+
+1. 源码（改前）：`examples/mini-shop/src/.../DiscountPolicy.java` 中 VIP 分支为 `0.9`
+2. 变更：`examples/mini-shop/artifacts/pr-42.diff`（`0.9` → `0.85`）
+3. 图谱：`examples/mini-shop/artifacts/code-graph.json`
+4. 影响面：`examples/mini-shop/artifacts/impact-report-pr-42.json`
+5. 上下文：`examples/mini-shop/artifacts/agent-context-pack.json`
+
+### 手工步骤（15 分钟）
+
+1. 打开 diff，确认变更落在 `DiscountPolicy.apply` 的字面量，而不是日志字符串。
+2. 在图谱中定位 `method:DiscountPolicy#apply`，列出 callers。
+3. 对照影响面 JSON：路径应到达 `OrderController.create`，测试应包含两个 VIP 断言测试。
+4. 计算示例：`qty=2, unitPrice=100` → 原总价 `180.0`，新总价 `170.0`。
+5. 写报告时把“业务是否批准 0.85”留在人工确认区；自动证据只保证影响与测试识别正确。
+6. 最终与 `verification-report-pr-42.md` 逐段对照：摘要、路径、测试、规则、轨迹、建议。
+
+若你的实现输出与金标在实体 ID 或路径节点上不一致，先修采集/建图，不要先美化 Markdown。
+
+
 ## 报告模板
 
 ```markdown

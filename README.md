@@ -85,7 +85,7 @@ flowchart LR
 
 实践部分会构建一个最小代码理解系统，目标不是做一个完整商业平台，而是把“源码解析 -> 图谱构建 -> 影响面分析 -> 可视化展示 -> Agent 查询接口 -> 验证报告”这条链路跑通。
 
-全书统一使用模拟案例 `mini-shop`（见 `examples/mini-shop/`）贯穿原理、图谱、影响面和 Agent 上下文，不引入真实业务仓库。
+全书统一使用模拟案例 `mini-shop`（见 `examples/mini-shop/` 与 [`docs/sample-case/README.md`](docs/sample-case/README.md)）贯穿原理、图谱、影响面和 Agent 上下文，不引入真实业务仓库。建议先按案例中的“全书跟做主线”走完 PR-42，再进入分章精读。
 
 ## 术语、案例与版本
 
