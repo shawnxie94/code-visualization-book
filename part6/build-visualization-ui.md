@@ -17,6 +17,21 @@
 
 ---
 
+## 界面信息流
+
+```mermaid
+flowchart LR
+ Data[graph + impact + report] --> Views[三视图]
+ Views --> GraphV[图谱子图]
+ Views --> ImpactV[影响路径/测试/风险]
+ Views --> DetailV[节点详情/源码回跳]
+ ImpactV --> Decision[Review 决策]
+ DetailV --> Decision
+```
+
+数据同源：UI 不得各自重新“猜”影响面。
+
+
 ## 设计原则
 
 1. 默认展示任务子图
@@ -218,11 +233,11 @@ badge risk.level + risk.reasons
 
 围绕「构建可视化界面」，读者离开本章前应能做到：
 
-1. 用自己的话解释核心概念与边界
-2. 在 `mini-shop` / `PR-42` 上指出对应实体、路径或产物
-3. 说明它如何服务人或 AI 的具体决策
-4. 列出至少两个局限或失败模式
-5. 知道下一章将把它连接到哪一层能力
+1. 实现三视图与数据绑定契约
+2. 保证 60 秒 PR 阅读路径
+3. 显示置信度与回源码
+4. 避免默认全仓大图
+5. 衔接到 Agent 查询接口
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 
@@ -259,9 +274,10 @@ badge risk.level + risk.reasons
 
 ## 延伸阅读与参考资料
 
-- [Mermaid docs](https://mermaid.js.org/)
-- [Cytoscape.js](https://js.cytoscape.org/)
-- [React Flow](https://reactflow.dev/)
-- [NNG cognitive load](https://www.nngroup.com/articles/minimize-cognitive-load/)
-- [OpenTelemetry UI 直觉](https://opentelemetry.io/docs/concepts/signals/traces/)
+- [Mermaid docs](https://mermaid.js.org/)：最小可交付图示渲染。
+- [Cytoscape.js](https://js.cytoscape.org/)：交互图扩展选项。
+- [React Flow](https://reactflow.dev/)：节点详情与工作流式界面。
+- [NNG cognitive load](https://www.nngroup.com/articles/minimize-cognitive-load/)：默认子图与信息分层的依据。
+- [OpenTelemetry Traces](https://opentelemetry.io/docs/concepts/signals/traces/)：路径可视化直觉；资料卡：`../docs/research-cards/rc-opentelemetry-traces.md`
+- [SARIF](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)：结果/证据交换格式参考；资料卡：`../docs/research-cards/rc-sarif.md`
 - 样例数据：[`code-graph.json`](../examples/mini-shop/artifacts/code-graph.json)、[`verification-report-pr-42.md`](../examples/mini-shop/artifacts/verification-report-pr-42.md)

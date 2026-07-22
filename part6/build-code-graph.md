@@ -91,6 +91,21 @@ tests 边连接两个测试到对应方法
 3. 重建相关 calls/tests
 4. 更新 `updated_at`
 
+## 建图与校验
+
+```mermaid
+flowchart LR
+ Struct[structure JSON] --> Nodes[nodes]
+ Struct --> Edges[edges + attrs]
+ Nodes --> Val[校验：无悬空边]
+ Edges --> Val
+ Val --> Graph[code-graph.json]
+ Graph --> Query[金标查询契约]
+```
+
+`DiscountPolicy#apply` 的 callers / tests 查不到，则建图未验收通过。
+
+
 ## 局限
 
 - 最小消解策略在重载/多态场景会留下候选。
@@ -157,11 +172,11 @@ index_version + 过期报错。
 
 围绕「构建代码图谱」，读者离开本章前应能做到：
 
-1. 用自己的话解释核心概念与边界
-2. 在 `mini-shop` / `PR-42` 上指出对应实体、路径或产物
-3. 说明它如何服务人或 AI 的具体决策
-4. 列出至少两个局限或失败模式
-5. 知道下一章将把它连接到哪一层能力
+1. 完成建图校验清单
+2. 保证无悬空边
+3. 跑通金标查询
+4. 写入 source/confidence
+5. 衔接到影响面实现
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 

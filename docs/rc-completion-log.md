@@ -45,3 +45,7 @@
 - artifacts 实体 ID 一致
 - research-cards 18 张字段齐全
 - `npm run build` success
+
+## 追加
+
+- 7 个无图章补流程图/时序图；28 章复盘清单章节化；全章资料卡覆盖

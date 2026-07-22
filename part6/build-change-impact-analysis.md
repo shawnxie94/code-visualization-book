@@ -102,6 +102,21 @@ if breaks_architecture_rule: +3
 - 测试包含 pricing 与 order
 - 生成 JSON + Markdown
 
+## 影响面实现流程
+
+```mermaid
+flowchart TD
+ Diff[pr-42.diff] --> Ent[变更实体]
+ Graph[code-graph.json] --> Ent
+ Ent --> Rev[反向调用路径]
+ Rev --> Tests[相关测试]
+ Tests --> Risk[风险分级]
+ Risk --> Report[impact-report JSON/MD]
+```
+
+输出必须与 `examples/mini-shop/artifacts/impact-report-pr-42.json` 字段兼容。
+
+
 ## 局限
 
 - 静态反向调用无法覆盖所有动态入口。
@@ -177,6 +192,18 @@ emit report(entities, paths, tests, risk, actions)
 
 金标检查：`PR-42` 报告中的 `changed_entities`、路径与 `examples/mini-shop/artifacts/impact-report-pr-42.json` 一致。
 
+
+## 关键要点复盘
+
+围绕「构建变更影响分析」，读者离开本章前应能做到：
+
+1. 实现 diff→实体→路径→测试→风险
+2. 对照 artifacts 金标字段
+3. 输出 recommended_actions
+4. 处理低置信边扩展
+5. 衔接到可视化 UI
+
+若任一做不到，请先复习本章例子与练习，再继续向后读。
 
 ## 练习
 

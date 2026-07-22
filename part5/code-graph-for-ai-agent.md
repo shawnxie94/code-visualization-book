@@ -89,6 +89,26 @@ find_symbol(apply)
 
 降级策略：标注不确定、扩大测试范围、请求人工确认。
 
+## Agent 查图调用链
+
+```mermaid
+sequenceDiagram
+  participant A as Agent
+  participant Q as Graph Query API
+  participant G as Code Graph
+  A->>Q: find_symbol(DiscountPolicy.apply)
+  Q->>G: lookup
+  G-->>Q: method:DiscountPolicy#apply
+  A->>Q: find_callers(id)
+  Q-->>A: calculateTotal / createOrder / create
+  A->>Q: related_tests(id)
+  Q-->>A: PricingServiceTest / OrderServiceTest
+  Note over A: 写入 query_trace 与 context pack
+```
+
+没有轨迹的查图，等于不可审计的“感觉检索”。
+
+
 ## 局限
 
 - 图谱质量决定工具上限，过期索引会误导 Agent。
@@ -144,11 +164,11 @@ MCP 提供的是工具暴露与调用协议；它不负责：
 
 围绕「代码图谱如何服务 AI Agent」，读者离开本章前应能做到：
 
-1. 用自己的话解释核心概念与边界
-2. 在 `mini-shop` / `PR-42` 上指出对应实体、路径或产物
-3. 说明它如何服务人或 AI 的具体决策
-4. 列出至少两个局限或失败模式
-5. 知道下一章将把它连接到哪一层能力
+1. 列出最小工具集
+2. 演示 find_symbol→callers→tests
+3. 要求失败响应结构化
+4. 说明轨迹如何进入验证报告
+5. 衔接到 Review 证据层
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 

@@ -132,6 +132,21 @@ cv-query find_callers --id method:DiscountPolicy#apply
 - 结果可被 Agent 直接序列化进上下文包
 - 轨迹完整
 
+## 工具调用与轨迹
+
+```mermaid
+sequenceDiagram
+  participant Agent
+  participant API as Agent Query API
+  participant Store as Graph/Reports
+  Agent->>API: impact_analysis(changed_ids)
+  API->>Store: reverse paths + tests + rules
+  Store-->>API: result
+  API-->>Agent: JSON + trace_id
+  Note over Agent,API: 失败也要结构化，禁止空影响面伪装成功
+```
+
+
 ## 局限
 
 - 接口不负责保证 Agent 一定正确使用结果。
@@ -195,6 +210,18 @@ Agent 面对该错误应收缩查询，而不是改去全文读取仓库绕过�
 
 错误响应也要结构化（未知 ID、图过期、权限不足），避免 Agent 把失败当成空影响面。
 
+
+## 关键要点复盘
+
+围绕「给 AI Agent 的查询接口」，读者离开本章前应能做到：
+
+1. 实现核心工具响应 JSON
+2. 返回 trace_id
+3. 结构化错误（未知 ID/图过期）
+4. 与上下文包字段对齐
+5. 衔接到验证报告
+
+若任一做不到，请先复习本章例子与练习，再继续向后读。
 
 ## 练习
 

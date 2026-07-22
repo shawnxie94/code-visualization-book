@@ -98,6 +98,20 @@ out/mini-shop/
 - 至少抽到 `calculateTotal -> apply` 候选调用
 - 错误文件不影响其他文件结果
 
+## 采集流程
+
+```mermaid
+flowchart TD
+ Src[源码树] --> Parse[Parser/AST]
+ Parse --> Extract[抽取 file/class/method]
+ Extract --> Cand[候选调用/测试]
+ Cand --> Out[structure JSON]
+ Out --> Next[交给建图模块]
+```
+
+采集阶段保留候选，符号消解与置信度可在建图阶段提升。
+
+
 ## 局限
 
 - 候选调用不等于精确调用。
@@ -150,11 +164,11 @@ out/mini-shop/
 
 围绕「采集源码结构」，读者离开本章前应能做到：
 
-1. 用自己的话解释核心概念与边界
-2. 在 `mini-shop` / `PR-42` 上指出对应实体、路径或产物
-3. 说明它如何服务人或 AI 的具体决策
-4. 列出至少两个局限或失败模式
-5. 知道下一章将把它连接到哪一层能力
+1. 给出采集输出最小 JSON
+2. 区分候选调用与已消解调用
+3. 保持稳定 ID
+4. 为 mini-shop 列出应抽出的方法集合
+5. 衔接到建图
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 
