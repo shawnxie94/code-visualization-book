@@ -165,6 +165,32 @@ OrderServiceTest covers OrderService.createOrder
 | 演进 | entity_id, commit/pr, change_type |
 | 组织 | entity_id, owner, rule_id, status |
 
+## mini-shop 五类事实速查
+
+| 事实类 | mini-shop 例子 |
+| --- | --- |
+| 结构 | `class:DiscountPolicy`、`method:DiscountPolicy#apply` |
+| 关系 | `calculateTotal calls apply`、`createOrder calls charge` |
+| 行为 | 测试执行命中 VIP 分支；（扩展）下单 trace |
+| 演进 | `PR-42` 修改 `apply` 字面量 0.9→0.85 |
+| 组织 | 规则 `pricing-no-payment`；pricing/order/payment 模块边界 |
+
+若只能列出其中一类，说明对象选择仍停留在“会画一种图”，还不是“会组织事实链”。
+
+## 从问题反推对象
+
+问题：`VIP 折扣变更是否影响支付金额？`
+
+最小对象集：
+
+1. 变更实体 `DiscountPolicy.apply`
+2. 调用路径到 `PaymentClient.charge`
+3. 相关测试断言
+4. 是否存在绕过计价的支付入口（如有）
+
+没有路径与测试，只看 diff 一行，不足以回答该问题。
+
+
 ## 练习
 
 1. 把“创建 VIP 订单”写成结构/关系/行为/演进/组织五类事实清单。

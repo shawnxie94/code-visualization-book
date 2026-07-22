@@ -89,6 +89,63 @@ flowchart LR
 
 冲突时按策略合并，而不是静默覆盖。
 
+## 从样例 JSON 读模型
+
+`examples/mini-shop/artifacts/code-graph.json` 中的一条调用边应能直接回答“谁调用谁”：
+
+```json
+{
+  "type": "calls",
+  "from": "method:PricingService#calculateTotal",
+  "to": "method:DiscountPolicy#apply",
+  "source": "static",
+  "confidence": "high"
+}
+```
+
+一条测试边应能直接回答“谁锁住该行为”：
+
+```json
+{
+  "type": "tests",
+  "from": "test:PricingServiceTest#shouldApplyVipDiscount",
+  "to": "method:DiscountPolicy#apply"
+}
+```
+
+一条架构规则应能被自动判定：
+
+```json
+{
+  "id": "pricing-no-payment",
+  "description": "pricing must not depend on payment",
+  "from_module": "pricing",
+  "forbidden_to_module": "payment"
+}
+```
+
+如果这些字段缺失，图谱就只是“能画”，还不能“能审”。
+
+## 稳定 ID 约定
+
+推荐：
+
+```text
+file:<path>
+class:<SimpleName>
+method:<Class>#<method>
+test:<Class>#<method>
+```
+
+要求：
+
+1. 同一实体在采集、图谱、影响面、上下文包中 ID 一致
+2. 重命名时显式迁移 ID 映射，而不是静默生成新 ID
+3. 低置信解析不得覆盖高置信 ID
+
+`PR-42` 变更实体 `method:DiscountPolicy#apply` 必须与图谱、报告全文一致。
+
+
 ## 局限
 
 - 模型过粗会丢关键语义，过细会难维护

@@ -164,6 +164,36 @@ flowchart TB
 
 不要用“买一个可视化工具”替代“建设理解基础设施”的决策，除非需求仅止于展示。
 
+## 最小基础设施拓扑
+
+```text
+Collectors (AST/graph/diff/test/trace)
+    -> Fact Store (graph + evidence)
+        -> Query API (human UI + Agent tools)
+            -> Reports (impact/verification)
+            -> Governance (rules, audit trail)
+```
+
+落地顺序建议：
+
+1. 稳定 ID 与采集
+2. 可查询图谱
+3. 影响面报告
+4. Agent 工具与轨迹
+5. 组织策略与度量
+
+跳过 1-3 直接做“AI 平台”，通常只会得到更快的不可审改动。
+
+## 运行指标（早期就该看）
+
+| 指标 | 含义 |
+| --- | --- |
+| 自动影响面覆盖率 | AI/人工 PR 中有报告的比例 |
+| 相关测试命中率 | 推荐测试真正失败/需更新的比例 |
+| 轨迹完整率 | 含 query_trace 的 PR 比例 |
+| 返工率 | 合并后因理解错误导致的 revert/hotfix |
+
+
 ## 练习
 
 1. 画出你们组织从 L2 到 L4 的三步路线图。

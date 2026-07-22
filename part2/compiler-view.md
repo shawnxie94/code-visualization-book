@@ -164,6 +164,18 @@ double total = pricingService.calculateTotal(quantity, unitPrice, customerType);
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 
+## 编译流水线与本书章节映射
+
+| 编译阶段 | 产出 | 本书落点 |
+| --- | --- | --- |
+| Lex/Parse | Token/AST | 源码到 AST |
+| 符号/类型 | 绑定关系 | 符号表章 |
+| IR/优化相关表示 | CFG/DFG 基础 | IR/CFG/DFG 章 |
+| 后端 | 机器码等 | 非本书重点 |
+
+代码理解系统借用编译前端思想，但不等于实现完整编译器。目标是可查询事实，而不是生成可执行程序。
+
+
 ## 练习
 
 1. 画出 `calculateTotal` 从字符到可分析结构的阶段图。

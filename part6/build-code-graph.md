@@ -165,6 +165,25 @@ index_version + 过期报错。
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 
+## 建图校验清单
+
+生成 `code-graph.json` 后必须跑：
+
+1. 所有 edge 的 from/to 都存在于 nodes
+2. 关键方法 ID 稳定（`method:Class#method`）
+3. 至少 1 条 `tests` 边指向 `DiscountPolicy#apply`
+4. 架构规则可计算
+5. 与 `PR-42` 变更实体可连接
+
+```text
+assert no dangling edges
+assert find(method:DiscountPolicy#apply)
+assert callers(apply) includes calculateTotal
+```
+
+校验失败时禁止进入影响面阶段。
+
+
 ## 练习
 
 1. 写出 nodes/edges 的最小 SQL schema。

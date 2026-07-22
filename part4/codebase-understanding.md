@@ -157,6 +157,39 @@ Issue：`VIP 用户投诉折扣不对`
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 
+## 上下文摘要模板（人/Agent 共用）
+
+```markdown
+# Context Brief: <question>
+## Entry points
+- ...
+## Primary path
+- ...
+## Key symbols
+- id / file / why relevant
+## Invariants
+- ...
+## Tests locking behavior
+- ...
+## Architecture rules
+- ...
+## Unknowns / low-confidence edges
+- ...
+## Suggested next queries
+1. ...
+2. ...
+```
+
+把该模板填完，才算“理解了这段代码”，而不是“读过几个文件”。
+
+## 失败模式
+
+1. **从细节开始**：先抠算法实现，却不知道入口与模块边界。
+2. **只搜关键字**：命中日志字符串，漏掉真实调用链。
+3. **不记测试**：改完无法证明行为。
+4. **给 Agent 一大段无关源码**：噪音压过结构事实。
+
+
 ## 练习
 
 1. 针对“VIP 订单如何计价”写出 5 条图谱查询顺序。

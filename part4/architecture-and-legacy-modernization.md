@@ -163,6 +163,24 @@ no classes in package "..pricing.."
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 
+## 架构规则与改造步的耦合
+
+改造每一步都要能回答：
+
+1. 依赖方向是否仍满足规则？
+2. 主路径是否仍有表征测试？
+3. 新旧实现是否可并存（Strangler）？
+4. 回滚点在哪？
+
+`mini-shop` 中的金标规则：
+
+```text
+pricing must not depend on payment
+```
+
+任何“为了方便复用费率”而让 pricing 依赖 payment 的 AI 改动，应在合并前被规则检查拦截。
+
+
 ## 练习
 
 1. 对比 `mini-shop` 的宣称架构与事实架构，写出一条可自动检查的规则。

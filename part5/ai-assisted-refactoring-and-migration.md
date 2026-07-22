@@ -76,6 +76,57 @@ flowchart LR
 
 这些失败都可通过“范围约束 + 规则检查 + 影响面报告”在合并前拦截。
 
+## 迁移报告模板（可直接套用）
+
+每次 AI 参与的结构改造，至少产出：
+
+```markdown
+# Migration Report: <title>
+## Scope
+- allowed files/modules:
+- forbidden changes:
+## Guardrails before edit
+- characterization tests:
+- architecture rules:
+## Steps
+1. behavior-preserving structural change
+2. verify tests/graph/rules
+3. intentional behavior change (if any)
+4. update tests + impact report
+## Evidence
+- call graph before/after:
+- tests before/after:
+- rules before/after:
+## Residual risks
+- ...
+## Rollback
+- ...
+```
+
+对 `mini-shop` 折扣配置化，第 1 步应保持 VIP 总价 `180.0`；第 3 步才切到 `0.85` 并更新断言到 `170.0`。
+
+## 范围约束如何写给 Agent
+
+不要只说“帮我重构定价模块”，而要给可检查边界：
+
+```text
+GOAL: extract discount factor constant without behavior change
+ALLOW: DiscountPolicy.java only
+DENY: OrderService, PaymentClient, public API signatures
+MUST_KEEP: VIP total=180.0 for qty=2 unit=100
+MUST_PASS: architecture rule pricing-no-payment
+OUTPUT: diff + callgraph summary + test results
+```
+
+边界越可机器检查，AI 越不容易“顺便优化”。
+
+## 与影响面/验证章的衔接
+
+- 小步结构改：重点看调用图是否保持、测试是否仍绿
+- 行为变更步：走完整影响面报告（见变更影响分析章）
+- 合并前：验证报告必须同时包含规则与相关测试（见 AI Review 证据 / 验证报告章）
+
+
 ## 局限
 
 - 小步策略依赖测试与规则护栏，缺少护栏时 AI 容易扩大 diff。

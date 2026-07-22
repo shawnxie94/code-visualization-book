@@ -158,6 +158,21 @@ out/mini-shop/
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 
+## 采集输出最小 JSON
+
+```json
+{
+  "files": [{"path": "src/main/java/com/minishop/pricing/DiscountPolicy.java"}],
+  "types": [{"id": "class:DiscountPolicy", "file": "...", "lines": [1, 20]}],
+  "methods": [{"id": "method:DiscountPolicy#apply", "owner": "class:DiscountPolicy", "lines": [3, 10]}],
+  "candidate_calls": [{"from": "method:PricingService#calculateTotal", "name": "apply", "line": 13}],
+  "tests": [{"id": "test:PricingServiceTest#shouldApplyVipDiscount"}]
+}
+```
+
+后续建图阶段再把 `candidate_calls` 提升为带 `resolves_to` 的 `calls` 边。采集阶段保留候选，避免过早丢信息。
+
+
 ## 练习
 
 1. 为 `DiscountPolicy.apply` 设计稳定 ID。

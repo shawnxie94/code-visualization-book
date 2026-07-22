@@ -159,6 +159,40 @@ covered:
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 
+## 动态事实如何并入图谱
+
+Trace/Coverage 不应替换静态图，而应作为带证据的边/属性：
+
+```json
+{
+  "type": "calls",
+  "from": "method:OrderService#createOrder",
+  "to": "method:PaymentClient#charge",
+  "source": "dynamic",
+  "confidence": "high",
+  "evidence_refs": ["trace:order-create-001"]
+}
+```
+
+合并策略建议：
+
+1. 静态有、动态无：保留静态，confidence 不变
+2. 动态有、静态无：新增边，标记 dynamic
+3. 两边都有：提升 confidence，并记录双来源
+4. 冲突：保留冲突项，供人/Agent 审查，不静默覆盖
+
+## mini-shop 示例
+
+下单路径的动态证据可确认：
+
+```text
+createOrder -> calculateTotal -> apply
+createOrder -> charge(total)
+```
+
+这对解释 `PR-42` 很关键：折扣变化会传导到支付金额，即使 diff 只改了定价文件。
+
+
 ## 练习
 
 1. 说明如何把一次订单请求 Trace 映射到 `createOrder -> calculateTotal -> apply`。

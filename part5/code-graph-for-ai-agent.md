@@ -164,6 +164,35 @@ injected_into_context:
 
 关键是“结果摘要 + 证据引用”一起注入，而不是把原始巨 JSON 全塞给模型。
 
+## Agent 查图最小工具集
+
+```text
+find_symbol(name|id) -> node
+find_callers(id, depth=1..n)
+find_callees(id)
+impact_analysis(changed_ids)
+related_tests(id)
+architecture_rules(module|id)
+```
+
+每次工具调用写入 `query_trace`，最终进入验证报告。没有轨迹的 Agent 结论，Reviewer 无法复盘。
+
+## 上下文包切片规则
+
+给 Agent 的不是全图，而是任务切片：
+
+```json
+{
+  "task": "change VIP discount factor",
+  "seed": ["method:DiscountPolicy#apply"],
+  "include": ["callers_depth_3", "related_tests", "rules"],
+  "exclude": ["unrelated modules", "full repo dump"]
+}
+```
+
+切片失败的典型症状：token 爆、改错文件、漏测试。
+
+
 ## 练习
 
 1. 为 `mini-shop` 设计 6 个工具调用序列完成 PR-42。

@@ -161,7 +161,27 @@ Review 政策应要求：关键断言必须有系统证据支撑。
 
 任何一步对不上，就从“快速合并”降级为“深入审”。
 
+## 证据包字段契约
+
+AI PR 证据层建议固定字段，便于 CI 与 UI 共用：
+
+```json
+{
+  "pr": "PR-42",
+  "changed_entities": [{"id": "method:DiscountPolicy#apply", "change_type": "modified"}],
+  "impact_paths": [{"path": ["method:DiscountPolicy#apply", "method:PricingService#calculateTotal", "method:OrderService#createOrder", "method:OrderController#create"]}],
+  "related_tests": ["test:PricingServiceTest#shouldApplyVipDiscount"],
+  "rules": [{"id": "pricing-no-payment", "status": "pass"}],
+  "risk": {"level": "medium", "reasons": ["pricing semantics change"]},
+  "query_trace": ["find_symbol", "find_callers", "related_tests", "architecture_rules"],
+  "human_checks": ["业务是否确认折扣 0.85"]
+}
+```
+
+缺 `changed_entities` 或 `query_trace` 的报告，只能算摘要，不能算可审计证据。
+
 ## 练习
+
 
 1. 用 PR-42 填完整证据清单 6 项。
 2. 把模型说明“无风险”改写成必须附带的系统证据段落。

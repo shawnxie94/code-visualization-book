@@ -162,6 +162,35 @@ Agent 可用变更事实做：
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 
+## Diff 到变更实体算法骨架
+
+```text
+input: pr-42.diff, code-graph.json
+for each changed file/hunk:
+  map lines -> enclosing method/class via graph or AST ranges
+  emit changed_entity {id, change_type, file, lines}
+dedupe entities
+attach related edges for downstream impact
+```
+
+对 `PR-42`，金标输出应包含且优先聚焦：
+
+```json
+{"id": "method:DiscountPolicy#apply", "change_type": "modified"}
+```
+
+若只输出文件级 `DiscountPolicy.java`，后续影响面与测试关联会变粗，Review 成本上升。
+
+## 变更分类
+
+| 类型 | 例子 | 影响面策略 |
+| --- | --- | --- |
+| 行为字面量 | 0.9→0.85 | 必做路径+测试 |
+| 纯重构重命名 | 变量改名 | 重点看绑定保持 |
+| 注释/格式 | 无语义 | 可降级 |
+| 测试更新 | 断言调整 | 核对是否覆盖变更路径 |
+
+
 ## 练习
 
 1. 把 `pr-42.diff` 映射为变更实体，并写出实体 ID。

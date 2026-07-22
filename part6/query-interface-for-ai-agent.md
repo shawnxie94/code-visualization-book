@@ -176,6 +176,26 @@ Agent 面对该错误应收缩查询，而不是改去全文读取仓库绕过�
 
 例如 `find_callers(DiscountPolicy.apply)` 的金标应包含 `PricingService.calculateTotal`。
 
+## 工具响应示例
+
+`impact_analysis` 响应应可直接渲染：
+
+```json
+{
+  "tool": "impact_analysis",
+  "input": {"changed": ["method:DiscountPolicy#apply"]},
+  "result": {
+    "paths": [["method:DiscountPolicy#apply", "method:PricingService#calculateTotal", "method:OrderService#createOrder", "method:OrderController#create"]],
+    "related_tests": ["test:PricingServiceTest#shouldApplyVipDiscount"],
+    "risk": "medium"
+  },
+  "trace_id": "q-17"
+}
+```
+
+错误响应也要结构化（未知 ID、图过期、权限不足），避免 Agent 把失败当成空影响面。
+
+
 ## 练习
 
 1. 为 `find_callers` 写 JSON schema（输入/输出）。

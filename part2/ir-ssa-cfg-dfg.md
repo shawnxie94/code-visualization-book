@@ -162,6 +162,48 @@ Tests: PricingServiceTest, OrderServiceTest
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 
+## 教学用 CFG/DFG 记录格式
+
+不必先上工业分析器，可用 JSON 记录方法内事实：
+
+```json
+{
+  "method": "method:DiscountPolicy#apply",
+  "cfg_blocks": [
+    {"id": "B0", "text": "entry"},
+    {"id": "B1", "text": "if VIP"},
+    {"id": "B2", "text": "return amount * 0.85"},
+    {"id": "B3", "text": "return amount"}
+  ],
+  "cfg_edges": [
+    {"from": "B0", "to": "B1"},
+    {"from": "B1", "to": "B2", "label": "VIP"},
+    {"from": "B1", "to": "B3", "label": "else"}
+  ],
+  "dfg_edges": [
+    {"from": "param:amount", "to": "mul:amount*0.85"},
+    {"from": "mul:amount*0.85", "to": "return:B2"},
+    {"from": "param:amount", "to": "return:B3"}
+  ]
+}
+```
+
+对 `PR-42`：
+
+- 变更落在 `B2` 的字面量
+- DFG 解释返回值变化
+- 调用图解释谁消费该返回值
+
+## 常见误解
+
+| 误解 | 澄清 |
+| --- | --- |
+| CFG 就是流程图装饰 | CFG 是可达控制事实，服务路径与测试选择 |
+| DFG 等于完整程序证明 | DFG 受别名/反射限制，是证据不是定理 |
+| 有了调用图就不需要 CFG | 调用图跨方法，CFG 管方法内分支 |
+| AI 可读源码所以不需要 IR | IR/路径事实让审计可机器检查 |
+
+
 ## 练习
 
 1. 为 `DiscountPolicy.apply` 画出 CFG，并标出 VIP 分支上的数据依赖。

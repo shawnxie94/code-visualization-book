@@ -170,6 +170,43 @@ if exists edge depends_on(pricing, payment): fail
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 
+## 静态分析输出契约（教学）
+
+一次静态分析 run 至少应留下可机器消费的结果：
+
+```json
+{
+  "analyzer": "mini-static",
+  "target": "method:DiscountPolicy#apply",
+  "findings": [],
+  "facts": {
+    "calls": [
+      {"from": "method:PricingService#calculateTotal", "to": "method:DiscountPolicy#apply", "confidence": "high"}
+    ],
+    "unresolved_calls": []
+  },
+  "limitations": ["no reflection", "no dynamic proxies"]
+}
+```
+
+注意：`findings` 为空不等于“无风险”；它只说明规则集未触发。影响面仍要结合调用图与测试。
+
+## 工作示例：PR-42 上的静态事实
+
+1. Diff 定位变更方法 `DiscountPolicy.apply`
+2. 静态调用图给出反向路径到 `OrderController.create`
+3. 未发现 `pricing -> payment` 依赖边
+4. 输出给影响面模块，而不是直接宣称“安全”
+
+## 常见失败
+
+| 失败 | 后果 | 缓解 |
+| --- | --- | --- |
+| 只报 bug 不产图谱事实 | 无法服务影响面 | 同时输出关系事实 |
+| 把 unresolved 丢掉 | 假完整 | 保留 unresolved 列表 |
+| 规则集过小却写“全面扫描” | 误导 Review | 明确 limitations |
+
+
 ## 练习
 
 1. 列出 `mini-shop` 仅靠静态分析可得的 5 条边。

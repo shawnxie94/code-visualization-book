@@ -161,6 +161,27 @@ ui/ 最小页面或静态报告页
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 
+## 端到端验收剧本（mini-shop）
+
+1. 采集源码结构 → 生成/更新 `code-graph.json`
+2. 输入 `pr-42.diff` → 产出 `impact-report-pr-42.json`
+3. 组装 Agent 上下文包 `agent-context-pack.json`
+4. 生成 `verification-report-pr-42.md`
+5. UI/报告页能在 60 秒讲清变更
+
+任一步产物字段与正文 ID 不一致，即验收失败。
+
+## 模块边界
+
+| 模块 | 输入 | 输出 |
+| --- | --- | --- |
+| collector | 源码 | 结构事实 |
+| graph | 结构事实 | nodes/edges |
+| impact | diff+graph | 影响报告 |
+| agent-api | graph+report | 工具响应 |
+| report | 全部 | 验证报告 |
+
+
 ## 练习
 
 1. 对照 artifacts，列出端到端验收 6 项是否可观察。

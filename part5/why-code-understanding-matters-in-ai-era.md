@@ -157,6 +157,38 @@ flowchart LR
 
 本书目标是帮助读者从 L0/L1 走向 L2/L3，并理解 L4 的方向。
 
+## 从 PR-42 看“为什么需要理解层”
+
+若无代码理解层，Agent 可能：
+
+1. 用文本替换所有 `0.9`（误伤无关常量）
+2. 不更新测试断言
+3. 不说明支付金额依赖折后价
+4. Reviewer 只能逐文件肉眼扫
+
+有理解层后，最小证据是：
+
+```text
+changed: method:DiscountPolicy#apply
+path: apply -> calculateTotal -> createOrder -> create
+tests: PricingServiceTest, OrderServiceTest (assert 180 -> 170)
+rules: pricing-no-payment pass
+```
+
+同一改动，从“看起来只是一行”变成“可审计的金额语义变更”。
+
+## 团队落地最小包
+
+第一周不必上平台，先规定：
+
+1. AI PR 描述必须贴变更实体
+2. 必须贴相关测试命令与结果
+3. 跨模块改动必须手写影响路径或自动报告
+4. 禁止无轨迹的“全仓自动重构”
+
+这四条就能把大量高风险生成挡在主干之外。
+
+
 ## 练习
 
 1. 列出 Agent 修改 `mini-shop` 折扣时的 4 类失败，并映射到缺失能力。

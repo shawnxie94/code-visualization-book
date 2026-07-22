@@ -82,6 +82,76 @@ recent changes (如有)
 | 查询轨迹 / 报告导出 |
 ```
 
+## 数据到视图的绑定契约
+
+UI 不应各自拼装字符串，而应消费统一产物：
+
+| 视图 | 数据来源 | 关键字段 |
+| --- | --- | --- |
+| 图谱视图 | `code-graph.json` | `nodes[]`, `edges[]` |
+| 影响面视图 | `impact-report-pr-42.json` | `changed_entities`, `impact_paths`, `related_tests`, `risk` |
+| 详情/报告 | `verification-report-pr-42.md` + graph | 路径、测试、规则、轨迹 |
+
+### 图谱视图伪代码
+
+```text
+load graph
+filter nodes by module in {order, pricing, payment}
+keep edges type in {contains, calls}
+render task subgraph
+on node click -> open detail(node.id)
+```
+
+### 影响面视图伪代码
+
+```text
+load impact report for PR-42
+highlight changed_entities on graph
+list impact_paths as ordered chains
+table related_tests with status hint
+badge risk.level + risk.reasons
+```
+
+### 详情面板最小 JSON
+
+点击 `method:DiscountPolicy#apply` 时展示：
+
+```json
+{
+  "id": "method:DiscountPolicy#apply",
+  "file": "src/main/java/com/minishop/pricing/DiscountPolicy.java",
+  "lines": [3, 10],
+  "callers": ["method:PricingService#calculateTotal"],
+  "callees": [],
+  "tests": [
+    "test:PricingServiceTest#shouldApplyVipDiscount",
+    "test:OrderServiceTest#shouldCreateVipOrderWithDiscount"
+  ],
+  "edge_meta": {"source": "static", "confidence": "high"}
+}
+```
+
+## 工作示例：用静态页交付 PR-42
+
+最小可交付不必上框架：
+
+1. `index.html` 左栏渲染 Mermaid 调用链
+2. 右栏 `fetch`/`embed` `impact-report-pr-42.json` 生成路径列表
+3. 底部链到 `verification-report-pr-42.md`
+4. 节点 `id` 显示为可复制文本，便于 Agent/人对照
+
+验收时只问一件事：Reviewer 能否在 60 秒内回答“改了谁、影响谁、测什么、风险为何是 medium”。
+
+## 反模式
+
+| 反模式 | 问题 | 纠正 |
+| --- | --- | --- |
+| 默认全仓力导向大图 | 认知过载，找不到变更 | 默认任务子图 |
+| 图与报告各算各的 | 数字不一致，失去证据 | 同源 JSON |
+| 只有漂亮图无可回跳路径 | 不能进入 Review | 节点回源码/文件行 |
+| 隐藏低置信边 | 假安全感 | 显示 source/confidence |
+
+
 ## 验收
 
 - 能看到 `apply -> calculateTotal -> createOrder`
@@ -155,6 +225,31 @@ recent changes (如有)
 5. 知道下一章将把它连接到哪一层能力
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
+
+## 最小 HTML 骨架（示意）
+
+```html
+<section id="graph">
+  <!-- Mermaid: apply -> calculateTotal -> createOrder -->
+</section>
+<section id="impact">
+  <h2>PR-42 Impact</h2>
+  <ul id="paths"></ul>
+  <table id="tests"></table>
+  <div id="risk"></div>
+</section>
+<section id="detail">
+  <pre id="node-json"></pre>
+  <a id="source-link" href="#">Open source path</a>
+</section>
+```
+
+交互最低要求：
+
+1. 点击路径高亮对应节点
+2. 点击节点填充 `node-json`
+3. 风险 `medium` 用非绿色标签（避免“全绿即安全”误导）
+
 
 ## 练习
 

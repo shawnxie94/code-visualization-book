@@ -114,6 +114,110 @@ Agent 若只搜索 `apply` 文本，可能误伤无关方法。更稳妥的上�
 
 也就是把符号层事实写进上下文包，而不是只贴源码片段。
 
+## 最小符号表 schema（教学可用）
+
+把符号层事实落成可查询记录时，不必一上来做完整编译器。最小表可以是：
+
+```json
+{
+  "symbols": [
+    {
+      "id": "method:DiscountPolicy#apply",
+      "kind": "method",
+      "name": "apply",
+      "owner": "class:DiscountPolicy",
+      "file": "src/main/java/com/minishop/pricing/DiscountPolicy.java",
+      "start_line": 3,
+      "end_line": 10,
+      "signature": "apply(String customerType, double amount) -> double"
+    }
+  ],
+  "refs": [
+    {
+      "id": "ref:PricingService#calculateTotal:discountPolicy",
+      "name": "discountPolicy",
+      "file": "src/main/java/com/minishop/pricing/PricingService.java",
+      "line": 12,
+      "resolves_to": "field:PricingService#discountPolicy",
+      "confidence": "high"
+    },
+    {
+      "id": "call:PricingService#calculateTotal->DiscountPolicy#apply",
+      "name": "apply",
+      "file": "src/main/java/com/minishop/pricing/PricingService.java",
+      "line": 13,
+      "resolves_to": "method:DiscountPolicy#apply",
+      "confidence": "high",
+      "receiver_type": "DiscountPolicy"
+    }
+  ]
+}
+```
+
+关键字段解释：
+
+| 字段 | 作用 |
+| --- | --- |
+| `id` | 稳定符号 ID，供图谱与 Agent 上下文引用 |
+| `owner` | 所属类/文件，支持作用域导航 |
+| `resolves_to` | 定义-引用边的目标 |
+| `confidence` | 绑定把握；中低置信必须保留，不可静默丢弃 |
+| `signature` / `receiver_type` | 帮助重载与多态消解 |
+
+这张表直接支撑：
+
+1. 跳转到定义
+2. 查找引用
+3. 调用图边
+4. `PR-42` 变更实体定位
+
+## 失败模式对照
+
+| 错误做法 | 症状 | 正确做法 |
+| --- | --- | --- |
+| 全局字符串匹配 `apply` | 误绑无关方法 | 按作用域 + 接收者类型消解 |
+| 忽略 shadowing | 内层变量被当成外层字段 | 从内向外查作用域链 |
+| 把候选当唯一 | 影响面漏路径或假精确 | 输出候选集 + confidence |
+| 只存名字不存 ID | 重命名后历史断链 | 稳定 ID + 限定名 |
+| Agent 上下文只贴源码 | 改错同名符号 | 附 `symbol_id` 与 callers |
+
+## 工作示例：从 AST 到可导航边
+
+输入：`PricingService.calculateTotal` 中的 `discountPolicy.apply(...)`。
+
+处理步骤：
+
+1. AST 识别 `MethodCallExpr` 与 `NameExpr`
+2. 作用域解析 `discountPolicy` → 字段定义
+3. 取字段类型 `DiscountPolicy`
+4. 在 `DiscountPolicy` 中按签名匹配 `apply`
+5. 写出 `calls` 边与 `resolves_to` 边
+
+输出（简化）：
+
+```text
+field:PricingService#discountPolicy  typed_as  class:DiscountPolicy
+call@PricingService:13  resolves_to  method:DiscountPolicy#apply
+method:PricingService#calculateTotal  calls  method:DiscountPolicy#apply
+```
+
+没有第 2-4 步，就只剩“看到了 apply 三个字符”。
+
+## 常见问题：符号与类型
+
+### 为什么 IDE 能跳转，我的脚本却不行？
+
+IDE 背后通常有完整语言服务（符号表 + 类型 + 索引）。脚本若只扫 AST 文本，缺少绑定层。
+
+### 动态代理 / DI 注入怎么办？
+
+静态层给候选与置信度；运行时/配置事实可在后续动态分析章补充，而不是假装静态唯一。
+
+### 是否必须实现完整类型推断？
+
+教学与影响面第一阶段不需要。优先做定义-引用、简单类型与方法绑定，再按场景加深。
+
+
 ## 局限
 
 - 动态语言、反射、依赖注入会降低静态绑定精度。
