@@ -6,3 +6,4 @@
 - 适用章节：part1/what-to-visualize, part5/software-understanding-infrastructure
 - 对应问题：组织级软件目录与元数据如何建模？
 - 关键结论：组织事实（服务、Owner）应进入统一事实层
+- 局限性：Catalog 质量依赖录入与同步；它描述服务/组织元数据，不替代代码级调用图。

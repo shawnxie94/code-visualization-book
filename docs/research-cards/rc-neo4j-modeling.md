@@ -6,3 +6,4 @@
 - 适用章节：part3/code-graph-model, part6/build-code-graph
 - 对应问题：图模型如何设计节点与关系？
 - 关键结论：先模型清晰，再选择存储；教学可先 JSON/SQLite
+- 局限性：图库带来运维成本；教学阶段 JSON/SQLite 往往更合适。

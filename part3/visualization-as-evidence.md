@@ -178,6 +178,29 @@ AI 生成的自然语言说明只能作为 `Claim` 的草稿，不能替换后�
 三者缺一，就从“证据”退回“插图”。
 
 
+## 如何把结论做成证据（操作步骤）
+
+1. **锁定主张**：先写一句话结论（例如：`PR-42` 会改变 VIP 订单总价并影响支付入参）。
+2. **绑定实体 ID**：把结论落到 `method:DiscountPolicy#apply` 等稳定 ID，而不是“某个折扣文件”。
+3. **选择最少表达**：路径图 + 测试表 + 规则结果；默认不渲染全仓大图。
+4. **标注来源与置信度**：边/结论标明 static/dynamic 与 high/medium/low。
+5. **提供回跳**：每个关键节点可定位文件与行号，或指向 artifacts。
+6. **保留查询轨迹**：记录 `find_symbol` / `find_callers` / `related_tests` 等步骤，使结论可复现。
+7. **分级展示**：阻断/重要/提示分层，避免证据过载。
+
+```text
+claim
+ -> entities
+ -> minimal views (path/table/rule)
+ -> confidence + source
+ -> source jump
+ -> query_trace
+ -> reviewer decision
+```
+
+这套步骤是方法，不只是版式建议。缺步骤 2/4/6 的图，通常只能算插图。
+
+
 ## 练习
 
 1. 把 `verification-report-pr-42.md` 拆成“图/路径/表/轨迹”四类证据。

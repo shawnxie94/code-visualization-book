@@ -6,3 +6,4 @@
 - 适用章节：part5/why-code-understanding-matters-in-ai-era, part1/why-code-visualization
 - 对应问题：仓库级软件工程任务难度如何度量？
 - 关键结论：仓库级修复需要上下文、导航与验证，不只是单文件生成
+- 局限性：基准任务分布与真实企业内部仓库仍有差距；分数不等于生产就绪。

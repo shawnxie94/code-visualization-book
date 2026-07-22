@@ -6,3 +6,4 @@
 - 适用章节：part4/architecture-and-legacy-modernization, part5/ai-assisted-refactoring-and-migration
 - 对应问题：遗留系统如何增量替代而非大爆炸重写？
 - 关键结论：改造应小步、可验证、可回退
+- 局限性：模式提供迁移策略，不替代测试护栏与接口兼容设计。

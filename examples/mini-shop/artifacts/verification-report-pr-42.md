@@ -2,22 +2,22 @@
 
 ## 改动摘要
 - 目标：VIP 折扣 `0.9` -> `0.85`
-- 变更实体：`DiscountPolicy.apply`
+- 变更实体：`method:DiscountPolicy#apply`
 - 文件：`src/main/java/com/minishop/pricing/DiscountPolicy.java`
 
 ## 影响路径
-1. `DiscountPolicy.apply`
-2. `PricingService.calculateTotal`
-3. `OrderService.createOrder`
-4. `OrderController.create`
+1. `method:DiscountPolicy#apply`
+2. `method:PricingService#calculateTotal`
+3. `method:OrderService#createOrder`
+4. `method:OrderController#create`
 
 支付金额依赖折后总价，因此 `PaymentClient.charge` 的入参会间接受影响。
 
 ## 相关测试
 | 测试 | 原断言 | 更新后断言 | 状态 |
 | --- | --- | --- | --- |
-| `PricingServiceTest.shouldApplyVipDiscount` | 180.0 | 170.0 | 需更新 |
-| `OrderServiceTest.shouldCreateVipOrderWithDiscount` | 180.0 | 170.0 | 需更新 |
+| `test:PricingServiceTest#shouldApplyVipDiscount` | 180.0 | 170.0 | 需更新 |
+| `test:OrderServiceTest#shouldCreateVipOrderWithDiscount` | 180.0 | 170.0 | 需更新 |
 
 ## 风险分级
 - 等级：中

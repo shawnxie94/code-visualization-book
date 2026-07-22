@@ -6,3 +6,4 @@
 - 适用章节：part3/change-analysis, part4/change-impact-verification, part6/build-change-impact-analysis
 - 对应问题：如何获得变更文件与行级差异？
 - 关键结论：Diff 是影响面输入，但必须映射到代码实体
+- 局限性：Diff 是行级变化，不等于方法级变更实体；需要映射到 AST/符号。
