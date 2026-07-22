@@ -1,0 +1,51 @@
+{
+  "nodes": [
+    {"id": "file:pricing/PricingService.java", "type": "file", "path": "src/main/java/com/minishop/pricing/PricingService.java"},
+    {"id": "file:pricing/DiscountPolicy.java", "type": "file", "path": "src/main/java/com/minishop/pricing/DiscountPolicy.java"},
+    {"id": "file:order/OrderService.java", "type": "file", "path": "src/main/java/com/minishop/order/OrderService.java"},
+    {"id": "file:order/OrderController.java", "type": "file", "path": "src/main/java/com/minishop/order/OrderController.java"},
+    {"id": "file:payment/PaymentClient.java", "type": "file", "path": "src/main/java/com/minishop/payment/PaymentClient.java"},
+    {"id": "class:PricingService", "type": "class", "name": "PricingService", "qualified_name": "com.minishop.pricing.PricingService"},
+    {"id": "class:DiscountPolicy", "type": "class", "name": "DiscountPolicy", "qualified_name": "com.minishop.pricing.DiscountPolicy"},
+    {"id": "class:OrderService", "type": "class", "name": "OrderService", "qualified_name": "com.minishop.order.OrderService"},
+    {"id": "class:OrderController", "type": "class", "name": "OrderController", "qualified_name": "com.minishop.order.OrderController"},
+    {"id": "class:PaymentClient", "type": "class", "name": "PaymentClient", "qualified_name": "com.minishop.payment.PaymentClient"},
+    {"id": "method:PricingService#calculateTotal", "type": "method", "name": "calculateTotal", "qualified_name": "com.minishop.pricing.PricingService.calculateTotal", "start_line": 11, "end_line": 16},
+    {"id": "method:DiscountPolicy#apply", "type": "method", "name": "apply", "qualified_name": "com.minishop.pricing.DiscountPolicy.apply", "start_line": 4, "end_line": 10},
+    {"id": "method:OrderService#createOrder", "type": "method", "name": "createOrder", "qualified_name": "com.minishop.order.OrderService.createOrder", "start_line": 20, "end_line": 26},
+    {"id": "method:OrderController#create", "type": "method", "name": "create", "qualified_name": "com.minishop.order.OrderController.create", "start_line": 10, "end_line": 12},
+    {"id": "method:PaymentClient#charge", "type": "method", "name": "charge", "qualified_name": "com.minishop.payment.PaymentClient.charge", "start_line": 4, "end_line": 6},
+    {"id": "method:OrderRepository#save", "type": "method", "name": "save", "qualified_name": "com.minishop.order.OrderRepository.save", "start_line": 4, "end_line": 6},
+    {"id": "test:PricingServiceTest#shouldApplyVipDiscount", "type": "test", "name": "shouldApplyVipDiscount", "qualified_name": "com.minishop.pricing.PricingServiceTest.shouldApplyVipDiscount"},
+    {"id": "test:OrderServiceTest#shouldCreateVipOrderWithDiscount", "type": "test", "name": "shouldCreateVipOrderWithDiscount", "qualified_name": "com.minishop.order.OrderServiceTest.shouldCreateVipOrderWithDiscount"},
+    {"id": "module:order", "type": "module", "name": "order"},
+    {"id": "module:pricing", "type": "module", "name": "pricing"},
+    {"id": "module:payment", "type": "module", "name": "payment"}
+  ],
+  "edges": [
+    {"type": "contains", "from": "file:pricing/PricingService.java", "to": "class:PricingService"},
+    {"type": "contains", "from": "class:PricingService", "to": "method:PricingService#calculateTotal"},
+    {"type": "contains", "from": "file:pricing/DiscountPolicy.java", "to": "class:DiscountPolicy"},
+    {"type": "contains", "from": "class:DiscountPolicy", "to": "method:DiscountPolicy#apply"},
+    {"type": "contains", "from": "file:order/OrderService.java", "to": "class:OrderService"},
+    {"type": "contains", "from": "class:OrderService", "to": "method:OrderService#createOrder"},
+    {"type": "contains", "from": "file:order/OrderController.java", "to": "class:OrderController"},
+    {"type": "contains", "from": "class:OrderController", "to": "method:OrderController#create"},
+    {"type": "contains", "from": "file:payment/PaymentClient.java", "to": "class:PaymentClient"},
+    {"type": "contains", "from": "class:PaymentClient", "to": "method:PaymentClient#charge"},
+    {"type": "calls", "from": "method:OrderController#create", "to": "method:OrderService#createOrder"},
+    {"type": "calls", "from": "method:OrderService#createOrder", "to": "method:PricingService#calculateTotal"},
+    {"type": "calls", "from": "method:OrderService#createOrder", "to": "method:PaymentClient#charge"},
+    {"type": "calls", "from": "method:OrderService#createOrder", "to": "method:OrderRepository#save"},
+    {"type": "calls", "from": "method:PricingService#calculateTotal", "to": "method:DiscountPolicy#apply"},
+    {"type": "tests", "from": "test:PricingServiceTest#shouldApplyVipDiscount", "to": "method:PricingService#calculateTotal"},
+    {"type": "tests", "from": "test:PricingServiceTest#shouldApplyVipDiscount", "to": "method:DiscountPolicy#apply"},
+    {"type": "tests", "from": "test:OrderServiceTest#shouldCreateVipOrderWithDiscount", "to": "method:OrderService#createOrder"},
+    {"type": "tests", "from": "test:OrderServiceTest#shouldCreateVipOrderWithDiscount", "to": "method:PricingService#calculateTotal"},
+    {"type": "depends_on", "from": "module:order", "to": "module:pricing"},
+    {"type": "depends_on", "from": "module:order", "to": "module:payment"}
+  ],
+  "architecture_rules": [
+    {"id": "rule:pricing-no-payment", "description": "pricing 模块不得直接依赖 payment 模块", "forbidden_edge": {"from_module": "pricing", "to_module": "payment"}}
+  ]
+}

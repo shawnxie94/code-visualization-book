@@ -1,176 +1,177 @@
 # 构建一个最小代码理解系统
 
-前面几篇分别讲了源码结构化、程序分析、代码图谱、核心工程场景和 AI 时代的新应用。本篇把这些概念收束到一个实践项目：构建一个最小代码理解系统。
+## 本章要解决的问题
 
-这个系统不追求覆盖所有语言和所有框架，也不追求做成商业平台。它的目标是跑通一条最小闭环：
+如何用最小实现跑通“采集 -> 建图 -> 分析 -> 可视化 -> Agent 查询 -> 验证报告”闭环？
+
+## 读者读完应获得什么
+
+1. 能说明系统目标、边界和模块划分。
+2. 能以 `mini-shop` 作为标准示例仓库推进实现。
+3. 能定义端到端验收标准。
+
+## 本章不讲什么
+
+- 不做成多租户商业平台。
+- 不追求全语言全框架覆盖。
+
+---
+
+本篇把前面的原理与场景收束到实践项目。目标不是大而全，而是完整可讲解。
 
 ```mermaid
 flowchart LR
-  Repo["源码仓库"] --> Collector["采集源码结构"]
-  Collector --> Graph["构建代码图谱"]
-  Diff["Git Diff"] --> Impact["变更影响分析"]
-  Graph --> Impact
-  Graph --> UI["可视化界面"]
-  Graph --> API["Agent 查询接口"]
-  Impact --> Report["验证报告"]
-  API --> Agent["AI Agent"]
-  Agent --> Report
+ Repo[mini-shop 源码] --> Collector[采集]
+ Collector --> Graph[代码图谱]
+ Diff[PR-42 Diff] --> Impact[影响面分析]
+ Graph --> Impact
+ Graph --> UI[可视化]
+ Graph --> API[Agent 查询接口]
+ Impact --> Report[验证报告]
+ API --> Agent[AI Agent]
+ Agent --> Report
+```
+![最小系统模块图（精确技术图）](../imgs/fig-12-mini-system.svg)
+
+## 本篇阅读路径
+
+请按下面顺序阅读，后文默认复用总览中的模块划分，不再重复原理定义：
+
+```text
+总览（本章）
+ -> 采集源码结构
+ -> 构建代码图谱
+ -> 构建变更影响分析
+ -> 构建可视化界面
+ -> 给 AI Agent 的查询接口
+ -> AI 修改后的验证报告
 ```
 
-> 后续 AI 配图备注：可生成一张“Mini Code Understanding Platform”的系统架构图，包含 collector、graph、analysis、ui、agent-api、report 六个模块。
-
-只要这条链路跑通，读者就能把本书前面讨论的原理落到工程实现里。
+标准输入输出以 `examples/mini-shop/` 与 `examples/mini-shop/artifacts/` 为准。
 
 ## 项目目标
 
-最小系统需要支持七类能力：
+1. 解析 `examples/mini-shop`，提取文件/类/方法/调用/测试
+2. 生成可查询图谱（JSON 即可）
+3. 输入 `PR-42` Diff，输出影响面
+4. 提供基础可视化与报告
+5. 提供 Agent 工具查询接口
+6. 输出验证报告
 
-1. 解析示例代码库，提取文件、类、方法和调用关系。
-2. 把提取结果组织成节点和边。
-3. 提供基础图查询，例如查符号、查调用方、查被调用方。
-4. 输入 Git Diff，定位变更实体。
-5. 沿调用图追踪影响面，并关联相关测试。
-6. 用界面或报告展示图谱、影响路径和风险节点。
-7. 给 AI Agent 提供结构化查询接口，并生成验证报告。
+已提供参考产物：
 
-这套能力覆盖了本书最核心的主线：代码事实如何被采集、组织、查询、展示，并服务 AI 时代的代码修改验证。
-
-## 示例代码库选择
-
-实践项目建议选择一个小型 Java/Spring 风格项目。原因有三点：
-
-- Java 是静态类型语言，符号和类型关系比较清晰。
-- Spring 风格应用有典型入口、服务层、数据访问层和测试结构。
-- JavaParser、ANTLR、Tree-sitter 等工具都能支持 Java 代码解析。
-
-示例项目不需要复杂。一个包含 Controller、Service、Repository、DTO、测试用例的简化应用就足够。重点是让结构和关系完整，而不是业务复杂。
-
-如果读者更熟悉 TypeScript、Go 或 Python，也可以替换语言。但需要注意，动态语言的调用关系和类型解析会更不确定，实践中要更多依赖运行时数据和测试。
+- [`artifacts/code-graph.json`](../examples/mini-shop/artifacts/code-graph.json)
+- [`artifacts/impact-report-pr-42.json`](../examples/mini-shop/artifacts/impact-report-pr-42.json)
+- [`artifacts/agent-context-pack.json`](../examples/mini-shop/artifacts/agent-context-pack.json)
+- [`artifacts/verification-report-pr-42.md`](../examples/mini-shop/artifacts/verification-report-pr-42.md)
 
 ## 系统边界
 
-最小系统要主动控制范围：
+做：
 
-- 不做完整 IDE。
-- 不做全语言支持。
-- 不做完美调用解析。
-- 不做生产级权限和多租户。
-- 不做复杂图数据库优化。
-- 不替代测试平台和 APM。
+- Java 子集解析
+- 直接调用关系
+- Diff 到方法映射
+- 反向影响路径
+- 测试关联
+- JSON 查询 API
 
-它要做的是建立可扩展骨架。后续可以逐步增加语言支持、框架规则、运行时数据、图数据库和前端交互。
+不做：
 
-## 推荐模块划分
+- 完整 IDE
+- 完美别名分析
+- 生产权限体系
+- 大规模分布式图存储
 
-可以按以下模块组织：
-
-```text
-collector
-  负责源码扫描和 AST 解析
-
-graph
-  负责节点、边、属性建模和存储
-
-analysis
-  负责调用查询、影响面分析和测试推荐
-
-report
-  负责生成 Markdown 或 JSON 报告
-
-ui
-  负责图谱和影响面可视化
-
-agent-api
-  负责给 AI Agent 提供查询接口
-```
-
-模块划分不必一开始就复杂，但边界要清楚。采集、建模、分析、展示和 Agent 接口是不同职责。
-
-## 数据流
-
-系统的数据流可以设计为：
+## 模块划分
 
 ```text
-源码仓库
-  -> 扫描文件
-  -> 解析 AST
-  -> 提取类、方法、调用
-  -> 生成节点和边
-  -> 存储代码图谱
-  -> 输入 Diff
-  -> 定位变更实体
-  -> 查询影响路径
-  -> 关联测试
-  -> 输出报告和可视化
+collector/ 扫描与 AST 抽取
+graph/ 节点边存储与校验
+analysis/ 影响面与测试推荐
+api/ Agent 查询工具
+report/ Markdown/JSON 报告
+ui/ 最小页面或静态报告页
 ```
 
-这条数据流的每一步都应该可以单独调试。比如先检查 AST 抽取结果，再检查图谱边，再检查影响面路径。
+## 技术取舍
 
-## 最小数据模型
+| 模块 | 默认选择 | 原因 |
+| --- | --- | --- |
+| 解析 | JavaParser 或 Tree-sitter | 易讲清 |
+| 存储 | JSON/SQLite | 易复现 |
+| 可视化 | Mermaid + 简单 HTML | 先证据后炫技 |
+| Agent 接口 | 本地工具/JSON API | 可平滑映射 MCP |
 
-最小数据模型可以只包含两张核心表：节点表和边表。
+## 端到端验收
 
-节点：
+1. 对 `mini-shop` 生成图谱，包含 `DiscountPolicy.apply` 调用方
+2. 对 `pr-42.diff` 识别变更实体
+3. 影响路径覆盖到 `OrderController.create`
+4. 相关测试包含 pricing/order 两测
+5. 能导出验证报告
+6. 查询接口可返回 callers/tests
 
-```text
-id
-type
-name
-qualified_name
-file_path
-start_line
-end_line
-properties
-```
+## 局限
 
-边：
-
-```text
-id
-source
-target
-type
-properties
-```
-
-这种模型足够表达文件包含类、类包含方法、方法调用方法、测试覆盖方法、提交修改方法等关系。后续可以增加版本、时间窗口、置信度和数据来源。
-
-## 技术选型
-
-实践项目可以选择轻量技术：
-
-- 源码解析：JavaParser 或 Tree-sitter。
-- 存储：JSON、SQLite 或本地文件。
-- 图查询：内存邻接表或 SQL 查询。
-- 可视化：前端图组件、Mermaid、Graphviz 或简单 HTML。
-- Agent 接口：CLI、HTTP API 或 MCP 风格接口。
-- 报告：Markdown 和 JSON。
-
-初期不要过早引入复杂基础设施。先让数据链路跑通，再优化存储和性能。
-
-## 验收标准
-
-实践项目完成后，应该能演示下面的流程：
-
-1. 扫描示例项目。
-2. 输出类、方法和调用关系。
-3. 展示一个方法的调用方和被调用方。
-4. 输入一次代码变更。
-5. 输出受影响入口和相关测试。
-6. 生成可视化视图或 Markdown 报告。
-7. 通过 Agent 查询接口返回结构化结果。
-
-这就是一个最小代码理解系统的闭环。
+- 最小系统只覆盖教学闭环，不替代生产级平台。
+- 解析精度、多语言与规模化不在本项目范围。
+- artifacts 是标准样例，实现时允许替换存储，但字段契约应保持。
 
 ## 小结
 
-本篇实践的目标不是把所有概念一次性做完，而是完成从代码到图谱、从变更到影响面、从影响面到 AI Review 证据的最小实现。
+1. 最小系统的价值是闭环，不是功能数量。
+2. `mini-shop` 与 artifacts 提供标准输入输出。
+3. 先 JSON 跑通，再考虑扩展存储与语言。
+4. 后续章节分别实现各模块。
 
-下一章先从第一步开始：采集源码结构。
+## 里程碑验收表
+
+| 里程碑 | 验收 |
+| --- | --- |
+| M1 采集 | mini-shop 全量 parse，产出 methods/calls |
+| M2 建图 | 金标调用链可查询 |
+| M3 影响面 | PR-42 报告字段齐全 |
+| M4 接口 | 5 工具可调用且有 trace |
+| M5 报告 | Markdown+JSON 同源输出 |
+| M6 UI | 三视图可完成一次 PR 阅读 |
+
+只有 M1-M5 全绿，才算实践闭环完成；M6 可并行。
+
+## 工作示例：本地演示脚本顺序
+
+```text
+1. collect examples/mini-shop -> out/graph.json
+2. impact out/graph.json artifacts/pr-42.diff -> out/impact.json
+3. context task="vip discount" -> out/context.json
+4. report out/impact.json -> out/report.md
+```
+
+第六篇各章应按这个脚本顺序对齐输入输出文件名，避免读者在章节间迷路。
+
+## 关键要点复盘
+
+围绕「构建一个最小代码理解系统」，读者离开本章前应能做到：
+
+1. 用自己的话解释核心概念与边界
+2. 在 `mini-shop` / `PR-42` 上指出对应实体、路径或产物
+3. 说明它如何服务人或 AI 的具体决策
+4. 列出至少两个局限或失败模式
+5. 知道下一章将把它连接到哪一层能力
+
+若任一做不到，请先复习本章例子与练习，再继续向后读。
+
+## 练习
+
+1. 对照 artifacts，列出端到端验收 6 项是否可观察。
+2. 说明为何先 JSON 后图数据库。
+3. 给 collector/graph/analysis/api/report 各写一句话职责。
 
 ## 延伸阅读与参考资料
 
-- [JavaParser](https://javaparser.org/)：Java 源码解析实践工具。
-- [Tree-sitter](https://tree-sitter.github.io/tree-sitter/)：多语言增量解析工具。
-- [Mermaid Flowcharts](https://mermaid.js.org/syntax/flowchart.html)：实践项目中绘制流程图的轻量方式。
-- [Model Context Protocol](https://modelcontextprotocol.io/)：后续将图谱查询能力暴露给 Agent 的接口参考。
+- [JavaParser](https://javaparser.org/)。资料卡：`../docs/research-cards/rc-javaparser.md`
+- [Tree-sitter](https://tree-sitter.github.io/tree-sitter/)。资料卡：`../docs/research-cards/rc-tree-sitter.md`
+- [MCP](https://modelcontextprotocol.io/)。资料卡：`../docs/research-cards/rc-mcp.md`
+- [SQLite](https://www.sqlite.org/docs.html)。资料卡：`../docs/research-cards/rc-sqlite.md`
+- [Neo4j modeling](https://neo4j.com/docs/getting-started/data-modeling/)。资料卡：`../docs/research-cards/rc-neo4j-modeling.md`
+- 标准产物：[`examples/mini-shop/artifacts/`](../examples/mini-shop/artifacts/)

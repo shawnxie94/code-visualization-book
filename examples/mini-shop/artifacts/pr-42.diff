@@ -1,0 +1,14 @@
+diff --git a/src/main/java/com/minishop/pricing/DiscountPolicy.java b/src/main/java/com/minishop/pricing/DiscountPolicy.java
+index 1111111..2222222 100644
+--- a/src/main/java/com/minishop/pricing/DiscountPolicy.java
++++ b/src/main/java/com/minishop/pricing/DiscountPolicy.java
+@@ -3,7 +3,7 @@ package com.minishop.pricing;
+ public class DiscountPolicy {
+     public double apply(String customerType, double amount) {
+         if ("VIP".equals(customerType)) {
+-            return amount * 0.9;
++            return amount * 0.85;
+         }
+         return amount;
+     }
+ }

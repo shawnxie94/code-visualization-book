@@ -1,200 +1,174 @@
 # 采集源码结构
 
-源码结构采集是实践项目的第一步。目标是把文件、类、方法和调用表达式提取成结构化数据，为后续代码图谱提供节点和边。
+## 本章要解决的问题
 
-这一章不要求一次性解决所有语义问题。我们先完成一个可工作的最小采集器：扫描源码文件，解析 AST，提取类、方法、继承关系和候选调用关系。
+如何从源码中抽取文件、类、方法、候选调用和测试，形成稳定 JSON？
 
-## 输入和输出
+## 读者读完应获得什么
+
+1. 能设计采集输入输出契约。
+2. 能定义实体稳定 ID。
+3. 能处理解析失败而不中断全量任务。
+
+## 本章不讲什么
+
+- 不在本章完成精确语义消解。
+- 不支持所有构建系统边角。
+
+---
+
+采集是流水线第一步。目标是可重复地从 `mini-shop` 抽出结构事实。
+
+## 输入输出
 
 输入：
 
-- 一个源码仓库路径。
-- 源码目录，例如 `src/main/java`。
-- 测试目录，例如 `src/test/java`。
-- 可选的依赖和构建配置。
-
-输出：
-
-- 文件节点。
-- 类或接口节点。
-- 方法节点。
-- 测试节点。
-- 包含关系。
-- 继承和实现关系。
-- 候选调用关系。
-
-这些输出可以先保存为 JSON，后续再导入图谱存储。
-
-## 扫描源码文件
-
-第一步是找到目标语言文件。对 Java 项目来说，可以扫描 `.java` 文件，并区分生产代码和测试代码。
-
-需要记录：
-
-- 文件路径。
-- 文件所属源码集，例如 main 或 test。
-- 包名。
-- 最后修改时间或 Git 信息。
-
-文件节点是所有后续实体的上层容器。每个类、方法都应该能追溯回源文件和行号。
-
-## 解析 AST
-
-每个源码文件需要解析为 AST。解析阶段要尽量保留源码位置，包括节点的起止行号和列号。
-
-如果解析失败，系统不应该直接中断全量任务。更好的做法是记录失败文件、失败原因，并继续分析其他文件。真实仓库里经常存在生成代码、不完整代码或版本不兼容语法。
-
-AST 解析结果可以用于提取：
-
-- 类声明。
-- 接口声明。
-- 枚举声明。
-- 字段声明。
-- 方法声明。
-- 构造函数。
-- 注解。
-- 方法调用表达式。
-
-## 提取类和接口
-
-类和接口节点至少需要记录：
-
 ```text
-id
-type: class | interface | enum
-name
-qualified_name
-package
-file_path
-start_line
-end_line
-modifiers
-annotations
+repo_path = examples/mini-shop
+source_roots = [src/main/java]
+test_roots = [src/test/java]
 ```
 
-`qualified_name` 很重要，因为简单名称可能重复。比如不同包下都可能有 `UserService`。
+输出节点：file / class / method / test
+输出边：contains / calls(候选) / tests(候选)
 
-类节点还应该建立到文件节点的 `contains` 边。
+## 扫描与解析
 
-## 提取方法
+1. 递归扫描 `.java`
+2. 区分 main/test
+3. 解析 AST，保留行号
+4. 单文件失败时记录错误并继续
 
-方法节点至少记录：
-
-```text
-id
-type: method
-name
-signature
-qualified_name
-owner_class
-return_type
-parameters
-file_path
-start_line
-end_line
-annotations
-```
-
-方法签名要包含参数类型，否则重载方法无法区分。
-
-方法节点要建立两类边：
-
-- 文件或类 `contains` 方法。
-- 方法可能调用其他方法。
-
-## 提取继承和实现关系
-
-从类声明中可以提取：
-
-- `extends`：继承父类。
-- `implements`：实现接口。
-
-如果目标类型在当前项目中能找到定义，就建立指向目标类或接口的边。如果找不到，也可以先记录外部类型引用，后续再决定是否纳入依赖图。
-
-继承和实现关系对调用图、影响面分析和 Agent 上下文都很重要。修改接口方法时，系统需要知道有哪些实现类受影响。
-
-## 提取候选调用关系
-
-方法体里的调用表达式可以被提取为候选调用。
-
-需要记录：
+## 稳定 ID
 
 ```text
-caller_method
-callee_name
-receiver_expression
-argument_count
-source_position
-raw_text
+file:src/main/java/com/minishop/pricing/DiscountPolicy.java
+class:com.minishop.pricing.DiscountPolicy
+method:com.minishop.pricing.DiscountPolicy#apply
+test:com.minishop.pricing.PricingServiceTest#shouldApplyVipDiscount
 ```
 
-如果暂时没有完整类型解析，可以先保存候选调用。后续通过类型信息、导入关系、方法签名和框架规则逐步解析到目标方法。
+ID 必须在多次采集间稳定，否则影响面与历史分析会断。
 
-不要一开始就追求完美调用图。最小系统可以先支持同类方法调用、简单成员调用和明确静态调用，再逐步扩展。
-
-## 处理测试代码
-
-测试代码不是附属物，而是验证图谱的重要节点。
-
-对测试文件，可以提取：
-
-- 测试类。
-- 测试方法。
-- 测试注解。
-- 测试调用的业务方法。
-- 测试文件与生产文件的命名关系。
-
-即使没有 Coverage，测试命名和目录也可以提供候选关联。后续影响面分析可以先给出“候选相关测试”，再用 Coverage 提升准确度。
-
-## 稳定 ID 设计
-
-图谱中的节点需要稳定 ID。可以考虑：
-
-```text
-repository + qualified_name + signature
-```
-
-对于方法：
-
-```text
-com.example.OrderService#cancel(java.lang.Long)
-```
-
-对于文件：
-
-```text
-file:src/main/java/com/example/OrderService.java
-```
-
-稳定 ID 能帮助增量更新、版本对比和报告跳转。
-
-## 输出示例
-
-节点示例：
+## 方法节点样例
 
 ```json
 {
-  "id": "method:com.example.OrderService#cancel(java.lang.Long)",
-  "type": "method",
-  "name": "cancel",
-  "file_path": "src/main/java/com/example/OrderService.java",
-  "start_line": 32,
-  "end_line": 48
+ "id": "method:com.minishop.pricing.PricingService#calculateTotal",
+ "type": "method",
+ "name": "calculateTotal",
+ "file_path": "src/main/java/com/minishop/pricing/PricingService.java",
+ "start_line": 11,
+ "end_line": 16,
+ "calls": [
+ {"method_name": "apply", "receiver_text": "discountPolicy", "line": 14}
+ ]
 }
 ```
 
-边示例：
+注意：此时 `calls` 仍可能是候选，精确绑定可在图谱构建阶段增强。
 
-```json
-{
-  "source": "class:com.example.OrderService",
-  "target": "method:com.example.OrderService#cancel(java.lang.Long)",
-  "type": "contains"
-}
+## 测试识别
+
+简单规则即可起步：
+
+- 路径在 `src/test/java`
+- 类名 `*Test`
+- 方法带 `@Test`
+
+并尝试从测试方法体提取被测调用，生成 `tests` 候选边。
+
+## 输出目录建议
+
+```text
+out/mini-shop/
+ files.json
+ types.json
+ methods.json
+ edges.json
+ errors.json
 ```
+
+也可直接合并为 [`artifacts/code-graph.json`](../examples/mini-shop/artifacts/code-graph.json) 形态。
+
+## 验收
+
+- 解析全部 mini-shop 源文件
+- 包含 `DiscountPolicy.apply` 与 `OrderService.createOrder`
+- 至少抽到 `calculateTotal -> apply` 候选调用
+- 错误文件不影响其他文件结果
+
+## 局限
+
+- 候选调用不等于精确调用。
+- 生成代码与非常规目录布局需要配置。
+- 仅覆盖教学所需 Java 子集时，迁移到其他语言要替换 parser。
 
 ## 小结
 
-源码结构采集的目标，是把代码从文本转换成节点和边。第一版不需要完美语义解析，但必须保留源码位置、稳定 ID 和关系来源。
+1. 采集先保证覆盖率与稳定 ID。
+2. 候选调用可以后置消解。
+3. 失败隔离是工程必备。
+4. 输出应能直接进入建图。
 
-下一章会把这些采集结果组织成代码图谱。
+## 采集质量门禁
+
+在进入建图前，采集器应输出质量报告：
+
+```json
+{
+ "files_total": 10,
+ "files_parsed": 10,
+ "files_failed": 0,
+ "methods_extracted": 12,
+ "call_exprs": 8,
+ "parse_errors": []
+}
+```
+
+门禁示例：
+
+1. 解析成功率 < 95%：警告
+2. 关键模块（order/pricing）解析失败：阻断
+3. 无任何 method 节点：阻断
+
+`mini-shop` 教学数据应保持 100% 可解析，作为回归基线。
+
+## 从候选调用到可解释抽取
+
+对 `discountPolicy.apply(...)`，采集阶段至少保留：
+
+- receiver_text
+- method_name
+- arg_count
+- line/column
+- enclosing_method_id
+
+这些字段决定后续消解与证据展示是否可用。缺少位置信息的调用边，几乎无法进入 Review 证据层。
+
+## 关键要点复盘
+
+围绕「采集源码结构」，读者离开本章前应能做到：
+
+1. 用自己的话解释核心概念与边界
+2. 在 `mini-shop` / `PR-42` 上指出对应实体、路径或产物
+3. 说明它如何服务人或 AI 的具体决策
+4. 列出至少两个局限或失败模式
+5. 知道下一章将把它连接到哪一层能力
+
+若任一做不到，请先复习本章例子与练习，再继续向后读。
+
+## 练习
+
+1. 为 `DiscountPolicy.apply` 设计稳定 ID。
+2. 写解析失败时的错误记录字段。
+3. 说明候选调用与精确调用的差别，并指出下一章如何消解。
+
+## 延伸阅读与参考资料
+
+- [JavaParser](https://javaparser.org/)。资料卡：`../docs/research-cards/rc-javaparser.md`
+- [Tree-sitter using parsers](https://tree-sitter.github.io/tree-sitter/using-parsers)。资料卡：`../docs/research-cards/rc-tree-sitter.md`
+- [JLS](https://docs.oracle.com/javase/specs/jls/se17/html/index.html)
+- [ANTLR](https://www.antlr.org/)。资料卡：`../docs/research-cards/rc-antlr.md`
+- [Source path / build layout conventions (Maven)](https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html)
+- 输出对照：[`code-graph.json`](../examples/mini-shop/artifacts/code-graph.json)

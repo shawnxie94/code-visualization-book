@@ -1,0 +1,49 @@
+{
+  "task": "将 VIP 折扣从 0.9 调整为 0.85，并保证相关测试通过",
+  "intent": {
+    "goal": "update VIP discount factor",
+    "in_scope": ["DiscountPolicy.apply", "related pricing/order tests"],
+    "out_of_scope": ["payment provider integration", "non-VIP discount rules"]
+  },
+  "symbols": [
+    {
+      "id": "method:DiscountPolicy#apply",
+      "role": "primary_edit_target",
+      "file": "src/main/java/com/minishop/pricing/DiscountPolicy.java",
+      "start_line": 4,
+      "end_line": 10
+    }
+  ],
+  "callers": [
+    "method:PricingService#calculateTotal",
+    "method:OrderService#createOrder",
+    "method:OrderController#create"
+  ],
+  "related_tests": [
+    "test:PricingServiceTest#shouldApplyVipDiscount",
+    "test:OrderServiceTest#shouldCreateVipOrderWithDiscount"
+  ],
+  "architecture_rules": [
+    "pricing 模块不得直接依赖 payment 模块"
+  ],
+  "snippets": [
+    {
+      "path": "src/main/java/com/minishop/pricing/DiscountPolicy.java",
+      "reason": "edit target"
+    },
+    {
+      "path": "src/main/java/com/minishop/pricing/PricingService.java",
+      "reason": "direct caller"
+    },
+    {
+      "path": "src/test/java/com/minishop/pricing/PricingServiceTest.java",
+      "reason": "assertion depends on VIP total"
+    }
+  ],
+  "query_trace": [
+    {"tool": "find_symbol", "args": {"name": "DiscountPolicy.apply"}},
+    {"tool": "find_callers", "args": {"symbol": "method:DiscountPolicy#apply"}},
+    {"tool": "related_tests", "args": {"symbol": "method:DiscountPolicy#apply"}},
+    {"tool": "architecture_rules", "args": {"module": "pricing"}}
+  ]
+}

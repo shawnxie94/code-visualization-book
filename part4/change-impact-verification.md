@@ -1,165 +1,247 @@
 # 变更影响分析与验证
 
-变更影响分析回答的问题是：这次修改会影响谁，应该如何验证。它是代码可视化最有工程价值的场景之一，也是 AI 生成代码后必须补强的能力。
+## 本章要解决的问题
 
-一次代码修改真正的风险，通常不在 Diff 本身，而在 Diff 连接出去的关系网络里。改动了哪个方法只是起点；这个方法被哪些入口调用、影响哪些测试、涉及哪些资源、是否处于高频运行路径，才决定验证策略。
+如何从一次 Diff 推导影响范围，并形成可进入 PR 的验证策略？
+
+## 读者读完应获得什么
+
+1. 能把行级 Diff 映射为代码实体变更。
+2. 能沿调用图做反向追踪，并关联测试与风险分级。
+3. 能输出一份可审计的影响面报告，并说明它在 PR 流程中的位置。
+
+## 本章不讲什么
+
+- 不承诺零误报的完美影响面。
+- 不展开所有测试选择算法细节。
+- 不依赖真实公司仓库。
+
+---
+
+行级 Diff 告诉你“哪些行变了”，工程决策需要的是“可能影响什么”。变更影响分析的任务，就是把 Diff 转成影响路径、相关测试和风险说明。
+
+本章以 `mini-shop` 的 `PR-42` 为完整例子：把 VIP 折扣从 `0.9` 调整为 `0.85`。
 
 ```mermaid
 flowchart LR
-  Diff["Git Diff"] --> Entity["变更实体<br/>方法/类/配置/资源"]
-  Entity --> Callers["反向调用链"]
-  Entity --> Resources["资源依赖"]
-  Callers --> Entrypoints["业务入口"]
-  Resources --> Entrypoints
-  Entity --> Tests["相关测试"]
-  Entrypoints --> Risk["风险分级"]
-  Tests --> Report["影响面报告"]
-  Risk --> Report
+ Diff[Git Diff] --> Entities[变更实体]
+ Entities --> Callers[反向调用链]
+ Callers --> Entries[入口/资源]
+ Entities --> Tests[相关测试]
+ Callers --> Tests
+ Entries --> Risk[风险分级]
+ Tests --> Risk
+ Risk --> Report[影响面报告]
+ Report --> PR[PR Review / CI]
 ```
+![PR-42 影响路径（精确技术图）](../imgs/fig-09-pr42-impact.svg)
 
-> 后续 AI 配图备注：可生成一张“PR 页面中的影响面分析报告”界面 mockup，突出变更实体、影响路径、建议测试和风险标签。
+> 后续 AI 配图备注：可生成“PR 页面中的影响面分析报告”界面 mockup，突出变更实体、影响路径、建议测试和风险标签。
 
 ## 为什么 Diff 不够
 
-Diff 只能告诉我们“改了什么”，不能完整告诉我们“影响了什么”。
+`PR-42` 的实质变更只有一行：
 
-例如一次修改只改了一个工具方法，看起来很小。但如果这个方法被多个核心业务入口调用，且缺少完整测试覆盖，它的风险可能很高。相反，一次修改涉及多个文件，但都在低风险后台路径上，且相关测试覆盖充分，风险可能可控。
+```diff
+- return amount * 0.9;
++ return amount * 0.85;
+```
 
-影响面分析的任务，是把行级 Diff 转换成工程意义上的影响路径。
+如果只看 Diff：
+
+- 不知道它属于 `DiscountPolicy.apply`
+- 不知道 `PricingService.calculateTotal` 会用到它
+- 不知道订单入口和支付金额间接受影响
+- 不知道两份测试仍断言 `180.0`
+
+影响面分析要补的，正是这些工程语义。
 
 ## 从 Diff 到变更实体
 
-第一步是把 Diff 映射到代码实体。
+步骤：
 
-行级变化可以进一步映射为：
+1. 解析 Diff，得到文件与行号
+2. 用源码索引定位行号落入的方法/类
+3. 生成变更实体列表
 
-- 变更方法。
-- 变更类或接口。
-- 变更字段。
-- 变更配置项。
-- 变更路由或 API。
-- 变更数据库访问。
-- 变更测试。
+结果：
 
-这一步依赖 AST 和符号表。只有知道行号属于哪个方法、方法属于哪个类、类属于哪个模块，才能进入图谱追踪。
+```json
+{
+ "changed_entities": [
+ {
+ "id": "method:DiscountPolicy#apply",
+ "file": "src/main/java/com/minishop/pricing/DiscountPolicy.java",
+ "lines": [6],
+ "change_type": "modified"
+ }
+ ]
+}
+```
 
-对于配置、SQL、路由和消息 topic，映射会更复杂。它们可能不是普通代码节点，但仍然应该进入影响面分析，因为很多生产事故来自配置和资源变更。
+没有实体映射，就无法查询调用方，也无法稳定跟踪历史。
 
 ## 调用链反向追踪
 
-如果某个底层方法被修改，需要沿调用图反向查找调用方，直到业务入口、模块边界或服务边界。
+从变更方法出发，沿 `calls` 边反向扩展：
 
-反向追踪可以回答：
+```text
+DiscountPolicy.apply
+ <- PricingService.calculateTotal
+ <- OrderService.createOrder
+ <- OrderController.create
+```
 
-- 哪些 Controller 或 API 可能受影响。
-- 哪些定时任务或消息消费者会触发变更代码。
-- 哪些上层服务依赖目标方法。
-- 哪些公共路径会被波及。
+同时记录同层副作用：
 
-追踪不能无限扩散。实际系统中需要设置边界：
+```text
+OrderService.createOrder -> PaymentClient.charge
+```
 
-- 最大调用深度。
-- 业务入口停止。
-- 模块边界停止。
-- 只保留运行时出现过的路径。
-- 只保留核心业务或高频路径。
+因此金额字面量变化会传导到支付入参。
 
-边界的作用不是掩盖风险，而是让报告可读。完整图谱可以很大，但 Review 报告需要突出最相关路径。
+完整图数据见 [`examples/mini-shop/artifacts/code-graph.json`](../examples/mini-shop/artifacts/code-graph.json)。
 
 ## 依赖传播和资源影响
 
-调用链不是唯一影响路径。一次变更可能通过资源传播：
+除了调用方，还要看：
 
-- 修改数据库字段影响多个查询和报表。
-- 修改消息格式影响消费者。
-- 修改缓存 key 影响读写双方。
-- 修改配置项影响不同环境行为。
-- 修改公共 DTO 影响 API client。
+- 模块依赖是否变化
+- 配置/资源是否变化
+- 对外 API 契约是否变化
 
-因此，影响面分析应该把资源依赖纳入图谱。否则系统会低估跨模块、跨服务、跨语言的影响。
+`PR-42` 中：
 
-对于微服务系统，运行时 Trace 和服务目录也很重要。代码仓库内的调用图无法完整覆盖服务间依赖，必须结合 API、RPC、消息和 Trace 数据。
+- 模块依赖未变
+- 对外方法签名未变
+- 行为契约变了：VIP 订单总价从 `180` 变为 `170`（数量 2、单价 100）
+
+行为契约变化必须进入报告，否则 Reviewer 会误判为“纯内部常量”。
 
 ## 关联测试与覆盖率
 
-影响面分析的最终目的之一是验证。系统应该尽量把受影响实体映射到相关测试。
+相关测试可通过以下信号发现：
 
-测试关联可以来自：
+1. 直接 `tests` 边
+2. 测试代码调用了变更方法或其调用方
+3. 覆盖率显示测试执行了变更行
 
-- Coverage：测试执行时覆盖了哪些代码。
-- 命名约定：测试类与业务类的对应关系。
-- 目录结构：同模块测试。
-- 历史共同变更：哪些测试经常随代码一起改。
-- 失败历史：哪些测试曾因相关模块变更失败。
-- 调用图：测试入口是否调用目标代码。
+`mini-shop` 中至少应关联：
 
-Coverage 是很强的信号，但不能单独代表质量。覆盖目标代码的测试不一定有有效断言，未覆盖代码也可能通过更高层集成测试间接验证。因此测试推荐应该解释依据，而不是只给出结论。
+| 测试 | 原因 |
+| --- | --- |
+| `PricingServiceTest.shouldApplyVipDiscount` | 直接验证 VIP 折扣总价 |
+| `OrderServiceTest.shouldCreateVipOrderWithDiscount` | 经过订单链路验证总价 |
+
+两者当前都断言 `180.0`，在折扣改为 `0.85` 后应更新为 `170.0`。
 
 ## 风险分级
 
-不是所有影响都同等重要。影响面报告应该给出风险分级，帮助 Reviewer 和 CI 决定验证强度。
+可用一个可解释的规则集，而不是黑盒分数：
 
-常见风险信号包括：
+| 信号 | PR-42 |
+| --- | --- |
+| 是否在核心业务链路 | 是（下单计价） |
+| 是否影响金额/权限等敏感语义 | 是 |
+| 相关测试是否存在 | 是，但会失败需更新 |
+| 是否跨模块传播 | 是（pricing -> order/payment 入参） |
+| 架构规则是否破坏 | 否 |
 
-- 影响核心业务入口。
-- 影响高频运行路径。
-- 影响低覆盖代码。
-- 修改高复杂度或高变更频率文件。
-- 跨模块或跨服务传播。
-- 涉及权限、支付、数据一致性、安全输入。
-- 影响多个团队 owner。
-
-风险分级不需要一开始就非常精确。即使只是把影响分成高、中、低，也能显著提高 Review 效率。
+综合等级：**中**。
+单行修改不等于低风险。
 
 ## 影响面报告设计
 
-一份好的影响面报告应该包含：
+最小报告字段：
 
-- 变更实体：改了哪些方法、类、配置或资源。
-- 影响路径：从变更点到业务入口的关键路径。
-- 受影响模块和服务。
-- 相关测试和覆盖情况。
-- 运行时证据：是否处于 Trace 高频路径或性能热点。
-- 风险等级。
-- 不确定性说明：哪些关系是推断，哪些关系已被运行时确认。
+```text
+pr / title
+changed_entities
+impact_paths
+related_tests
+risk.level + reasons
+recommended_actions
+query_trace
+```
 
-报告不应该只是一个大图。更实用的结构通常是“摘要 + 风险列表 + 关键路径 + 测试建议 + 证据链接”。
+`PR-42` 样例：
+
+- JSON：[`examples/mini-shop/artifacts/impact-report-pr-42.json`](../examples/mini-shop/artifacts/impact-report-pr-42.json)
+- Markdown：[`examples/mini-shop/artifacts/verification-report-pr-42.md`](../examples/mini-shop/artifacts/verification-report-pr-42.md)
+
+报告示例片段：
+
+```markdown
+## 影响路径
+apply -> calculateTotal -> createOrder -> create
+
+## 建议
+1. 更新定价与订单测试期望值
+2. 运行 pricing/order 测试
+3. Review 支付金额是否随总价变化
+```
 
 ## 在 PR 流程中的位置
 
-影响面分析最适合出现在 PR 阶段。开发者提交变更后，系统自动生成报告：
+建议接入点：
 
-- 这次变更影响哪些入口。
-- 建议运行哪些测试。
-- 哪些路径没有覆盖。
-- 是否违反架构约束。
-- 是否需要特定 owner Review。
+1. **开发本地**：提交前预览影响面
+2. **CI**：对 PR Diff 自动生成报告注释
+3. **Review**：Reviewer 先看路径/测试/风险，再看代码
+4. **合并后**：必要时结合线上指标观察
 
-这样，影响面分析就从事后排查工具变成合并前的验证工具。
+它不替代测试，而是帮助决定“测什么、看什么、问什么”。
 
 ## AI 时代的影响面验证
 
-AI 生成代码后，影响面分析更重要。Agent 可能能快速生成补丁，但它不一定知道完整影响范围。
+当修改由 Agent 生成时，影响面报告还要回答：
 
-AI 修改后的验证报告应该至少回答：
+1. Agent 是否改到了声称的实体
+2. 是否漏掉相关测试更新
+3. 查询轨迹是否支持其上下文选择
+4. 是否违反架构规则
 
-- AI 改了哪些实体。
-- 这些实体被谁调用。
-- 哪些测试应该运行。
-- 是否改到任务范围之外。
-- 是否触碰核心路径或架构边界。
+也就是说，影响面分析既是给人类的，也是给 AI 变更的验证层。
 
-这份报告也可以反向约束 AI：在修改前先运行影响面查询，要求 Agent 只在影响面相关文件中操作，并解释为什么需要修改额外文件。
+## 方法依据
+
+影响面分析并不是“凭感觉扩文件”，其工程基础通常包括：
+
+1. **变更定位**：由版本控制 diff 提供行级变化（见 Git 文档）。
+2. **实体映射**：把行映射到方法/类等可索引对象。
+3. **依赖传播**：沿调用/依赖关系扩展候选影响集。
+4. **测试选择**：按变更选择相关测试（Test Impact Analysis 思路）。
+5. **风险解释**：用可检查信号解释为何是中/高风险，而不是黑盒分数。
+
+因此，报告里的每一条路径和测试建议，都应能回跳到图谱边或 diff 证据。
+
+## 局限
+
+- 静态反向调用可能漏掉反射/配置入口
+- 测试关联可能不完整
+- 风险规则需要团队校准
+- 不能证明“无影响”，只能提供证据与候选范围
 
 ## 小结
 
-变更影响分析把 Diff、调用图、依赖图、测试覆盖、运行时证据和历史变更连接起来。它让团队从“看改了什么”升级为“知道影响谁、怎么验证”。
+1. Diff 必须先映射到代码实体。
+2. 影响面 = 变更实体 + 反向路径 + 测试 + 风险。
+3. 报告应可进入 PR，并可审计。
+4. 对 AI 修改，影响面是关键验证证据层。
 
-在 AI 时代，影响面分析会成为 AI Review 的核心证据层。下一章讨论另一个高价值场景：架构理解与遗留系统改造。
+## 练习
+
+1. 基于 `pr-42.diff` 手工写出变更实体、影响路径、相关测试、风险等级。
+2. 解释为何 `PaymentClient` 未改文件仍可能受影响。
+3. 若删除 `OrderServiceTest`，风险等级与建议动作如何变化？
+4. 把影响面报告改写成 PR 评论的 8 行摘要。
 
 ## 延伸阅读与参考资料
 
-- [Azure Pipelines Test Impact Analysis](https://learn.microsoft.com/en-us/azure/devops/pipelines/test/test-impact-analysis?view=azure-devops)：变更影响测试选择的官方资料。
-- [Launchable Predictive Test Selection](https://help.launchableinc.com/features/predictive-test-selection/)：预测式测试选择产品资料。
-- [Codecov Pull Request Comments](https://docs.codecov.com/docs/pull-request-comments)：PR 中展示覆盖率变化的参考。
-- [CodeScene Change Coupling](https://codescene.io/docs/guides/technical/change-coupling.html)：变更耦合分析的工程实践参考。
+- [Git diff](https://git-scm.com/docs/git-diff)。资料卡：`../docs/research-cards/rc-git-diff.md`
+- [Test Impact Analysis](https://learn.microsoft.com/en-us/azure/devops/pipelines/test/test-impact-analysis)。资料卡：`../docs/research-cards/rc-test-impact.md`
+- [GitHub code scanning / checks](https://docs.github.com/en/code-security)：PR 中的自动检查位。
+- [Codecov docs](https://docs.codecov.com/docs)：覆盖与 PR 反馈参考。
+- [CodeQL](https://codeql.github.com/docs/)：深度静态证据补充。
+- [Launchable / TIA industry practice](https://www.launchableinc.com/)：测试选择工程化参考（产品文档，次级）。
+- 本书样例：[`impact-report-pr-42.json`](../examples/mini-shop/artifacts/impact-report-pr-42.json)、[`verification-report-pr-42.md`](../examples/mini-shop/artifacts/verification-report-pr-42.md)。

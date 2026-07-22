@@ -21,7 +21,7 @@
     * [变更影响分析与验证](part4/change-impact-verification.md)
     * [架构理解与遗留系统改造](part4/architecture-and-legacy-modernization.md)
 * 第五篇：AI 时代的新应用
-    * [AI 写代码之后，为什么代码理解更重要](part5/why-code-understanding-matters-in-ai-era.md)
+    * [为什么 AI 时代更需要代码理解](part5/why-code-understanding-matters-in-ai-era.md)
     * [Agent 上下文工程](part5/agent-context-engineering.md)
     * [代码图谱如何服务 AI Agent](part5/code-graph-for-ai-agent.md)
     * [AI 生成代码的 Review 证据层](part5/ai-code-review-evidence.md)

@@ -1,167 +1,179 @@
 # 构建变更影响分析
 
-变更影响分析把 Git Diff 和代码图谱连接起来。目标是从一次修改推导可能受影响的入口、调用方和测试，并输出可验证报告。
+## 本章要解决的问题
 
-在最小系统中，影响面分析不追求完全精确，而是要跑通基本链路：定位变更实体、反向追踪调用方、关联测试、生成报告。
+如何基于 Diff 和图谱自动输出影响面报告？
 
-## 输入 Git Diff
+## 读者读完应获得什么
 
-输入可以来自：
+1. 能实现 Diff -> 实体 -> 反向路径 -> 测试 -> 风险 的算法骨架。
+2. 能对 `PR-42` 产出与样例一致的关键字段。
+3. 能解释不确定结果如何表示。
 
-- 当前工作区 Diff。
-- 两个 Git commit 之间的 Diff。
-- 一个 PR 的变更文件。
-- 用户手动指定的变更文件和行号。
+## 本章不讲什么
 
-最小实现可以先支持 Git 命令输出：
+- 不追求研究级指针分析精度。
 
-```text
-git diff --name-only
-git diff --unified=0
-```
+---
 
-系统需要拿到变更文件、变更行号和变更类型，例如新增、修改、删除。
-
-## 定位变更实体
-
-有了文件和行号后，需要映射到图谱实体。
-
-规则可以从简单开始：
-
-- 如果变更行落在某个方法范围内，标记该方法变更。
-- 如果变更行落在类字段或注解上，标记该类变更。
-- 如果变更文件是测试文件，标记测试变更。
-- 如果变更文件是配置，标记配置变更。
-
-对于删除代码，行号映射会更复杂。第一版可以通过变更前图谱定位，后续再处理精细删除场景。
-
-## 反向追踪调用方
-
-定位变更方法后，沿 `calls` 边反向追踪调用方。
-
-基本算法：
+## 算法骨架
 
 ```text
-queue = changed_methods
-visited = set()
-
-while queue not empty:
-  current = queue.pop()
-  callers = reverse_edges(current, type="calls")
-  for caller in callers:
-    if caller not visited:
-      record_path(caller -> current)
-      queue.add(caller)
+1. parse_diff(diff) -> changed_lines_by_file
+2. map_lines_to_entities(graph, changed_lines) -> changed_entities
+3. for e in changed_entities:
+ reverse_dfs(callers) within depth N
+4. collect entry points / external resources
+5. collect related tests
+6. score risk
+7. emit report json/md
 ```
 
-追踪时需要设置限制：
+## Diff 映射
 
-- 最大深度。
-- 只追踪项目内方法。
-- 到入口方法停止。
-- 到模块边界停止。
-- 忽略低置信度边，或单独标记。
-
-否则影响面可能无限扩散，报告不可读。
-
-## 识别入口
-
-入口节点可以来自前面的源码采集：
-
-- Controller 方法。
-- 路由方法。
-- 消息消费者。
-- 定时任务。
-- 命令行任务。
-- 测试入口。
-
-如果反向追踪到入口，说明变更可能影响一个外部可触发路径。报告中应该优先展示从变更方法到入口的路径。
-
-## 关联测试
-
-相关测试可以通过多种方式找到：
-
-- `covers` 边：Coverage 数据直接表明测试覆盖目标方法。
-- 调用边：测试方法调用了目标方法或上游入口。
-- 命名约定：`OrderServiceTest` 对应 `OrderService`。
-- 同目录或同模块。
-- 历史共同变更。
-
-最小系统可以先用命名约定和调用关系，后续再接入 Coverage。
-
-测试推荐最好给出依据。例如：
+对 `pr-42.diff`，变更行落入 `DiscountPolicy.apply` 方法区间，故：
 
 ```text
-OrderServiceTest.cancel_shouldReleaseStock
-原因：测试方法调用了 OrderService.cancel
+changed_entities = [method:DiscountPolicy#apply]
 ```
 
-## 风险提示
-
-影响面报告可以加入基础风险提示：
-
-- 影响入口数量多。
-- 调用路径深。
-- 变更方法无相关测试。
-- 变更文件复杂度高。
-- 变更文件近期频繁修改。
-- 调用边置信度低。
-
-第一版风险规则可以很简单，但要明确可解释。
-
-## 输出影响面报告
-
-报告建议包含：
+## 反向路径
 
 ```text
-变更摘要
-  - 变更文件
-  - 变更实体
-
-影响路径
-  - 从入口到变更方法的关键路径
-
-相关测试
-  - 推荐测试
-  - 推荐依据
-
-风险提示
-  - 未覆盖路径
-  - 低置信度边
-  - 架构边界变化
-
-不确定性
-  - 未解析调用
-  - 外部依赖
+apply
+ ^ calculateTotal
+ ^ createOrder
+ ^ create
 ```
 
-报告可以输出 Markdown 给人读，也可以输出 JSON 给 Agent 或 CI 使用。
+伪代码：
 
-## 示例输出
-
-```markdown
-## 变更实体
-
-- `OrderService.cancel(Long)`
-
-## 影响路径
-
-- `OrderController.cancel` -> `OrderService.cancel`
-- `OrderJob.retryCancel` -> `OrderService.cancel`
-
-## 建议测试
-
-- `OrderServiceTest.cancel_shouldReleaseStock`
-- `OrderControllerTest.cancel_shouldReturnSuccess`
-
-## 风险
-
-- 影响订单核心路径
-- 库存回滚调用缺少集成测试覆盖
+```python
+def find_callers(graph, method_id, depth=5):
+ result = []
+ stack = [(method_id, [])]
+ while stack:
+ cur, path = stack.pop()
+ if len(path) > depth: continue
+ for edge in inbound_calls(graph, cur):
+ nxt = edge.from
+ result.append(path + [nxt])
+ stack.append((nxt, path + [nxt]))
+ return result
 ```
+
+## 测试关联
+
+```text
+tests_edge.to in affected_methods
+或 test 方法体候选调用命中 affected_methods
+```
+
+## 风险规则（可解释）
+
+```text
+if touches_money_path: +2
+if has_failing_or_stale_tests: +2
+if crosses_modules: +1
+if breaks_architecture_rule: +3
+```
+
+`PR-42` 应为 medium，并给出 reasons。
+
+## 输出契约
+
+与 [`impact-report-pr-42.json`](../examples/mini-shop/artifacts/impact-report-pr-42.json) 对齐：
+
+```json
+{
+ "changed_entities": [],
+ "impact_paths": [],
+ "related_tests": [],
+ "risk": {"level": "medium", "reasons": []},
+ "recommended_actions": []
+}
+```
+
+## 验收
+
+- 输入 `artifacts/pr-42.diff`
+- 识别 `DiscountPolicy.apply`
+- 路径覆盖 `OrderController.create`
+- 测试包含 pricing 与 order
+- 生成 JSON + Markdown
+
+## 局限
+
+- 静态反向调用无法覆盖所有动态入口。
+- 风险规则需要按团队校准。
+- 深度过大时路径爆炸，需要裁剪与汇总。
 
 ## 小结
 
-变更影响分析是连接代码图谱和工程验证的关键能力。它从 Diff 出发，把变更映射到代码实体，再沿图谱追踪入口和测试。
+1. 影响面是可实现的确定性流水线。
+2. 关键在实体映射与调用反向遍历。
+3. 风险分数必须可解释。
+4. 输出要直接服务 PR 与 Agent 验证。
 
-下一章会把这些结果展示出来，构建可视化界面。
+## 端到端伪代码（可实现）
+
+```python
+def analyze(pr_diff, graph):
+ changed = map_diff_to_entities(pr_diff, graph)
+ impacted = set(changed)
+ for e in changed:
+ impacted |= reverse_callers(graph, e, depth=5)
+ tests = related_tests(graph, impacted)
+ risk = score_risk(changed, impacted, tests, graph.rules)
+ return Report(changed, paths(impacted), tests, risk)
+```
+
+用 `mini-shop` 的 `pr-42.diff` 做金标测试：
+`changed={DiscountPolicy.apply}` 且路径包含 `OrderController.create`。
+
+## 工作示例：深度裁剪
+
+反向调用 depth=5 在小仓足够；大仓需要：
+
+1. 按模块裁剪
+2. 优先测试入口/API 入口
+3. 汇总为“前 N 条关键路径 + 其余计数”
+
+报告应写：`paths_shown=3, paths_total=42`，避免伪称“完整枚举”。
+
+## 常见问题：实现影响面
+
+### depth 设多少？
+
+小仓 5 足够；大仓需裁剪与汇总。
+
+### 如何测算法正确？
+
+用 PR-42 金标：实体、路径、测试、风险字段。
+
+### 风险分数如何避免黑盒？
+
+每条 reason 必须可解释、可配置。
+
+## 本章检查清单
+
+1. diff 映射
+2. 反向路径
+3. 测试关联
+4. 风险解释
+5. 报告契约
+
+## 练习
+
+1. 实现（伪代码）diff 行到方法实体的映射。
+2. 对 PR-42 跑一遍反向路径，核对是否到达 `OrderController.create`。
+3. 给风险规则打分并解释 reasons。
+
+## 延伸阅读与参考资料
+
+- [git diff](https://git-scm.com/docs/git-diff)。资料卡：`../docs/research-cards/rc-git-diff.md`
+- [Test Impact Analysis](https://learn.microsoft.com/en-us/azure/devops/pipelines/test/test-impact-analysis)。资料卡：`../docs/research-cards/rc-test-impact.md`
+- [GitHub checks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/about-status-checks)
+- [CodeQL](https://codeql.github.com/docs/)
+- [SARIF](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)。资料卡：`../docs/research-cards/rc-sarif.md`
+- 样例：[`impact-report-pr-42.json`](../examples/mini-shop/artifacts/impact-report-pr-42.json)

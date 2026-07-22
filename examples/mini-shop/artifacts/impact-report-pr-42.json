@@ -1,0 +1,41 @@
+{
+  "pr": "PR-42",
+  "title": "Adjust VIP discount from 0.9 to 0.85",
+  "changed_entities": [
+    {
+      "id": "method:DiscountPolicy#apply",
+      "change_type": "modified",
+      "file": "src/main/java/com/minishop/pricing/DiscountPolicy.java",
+      "lines": [6]
+    }
+  ],
+  "impact_paths": [
+    {
+      "path": [
+        "method:DiscountPolicy#apply",
+        "method:PricingService#calculateTotal",
+        "method:OrderService#createOrder",
+        "method:OrderController#create"
+      ],
+      "entry": "OrderController.create"
+    }
+  ],
+  "related_tests": [
+    "test:PricingServiceTest#shouldApplyVipDiscount",
+    "test:OrderServiceTest#shouldCreateVipOrderWithDiscount"
+  ],
+  "risk": {
+    "level": "medium",
+    "reasons": [
+      "pricing logic change affects order total",
+      "existing tests assert old total 180.0 and will fail",
+      "payment amount depends on discounted total"
+    ]
+  },
+  "recommended_actions": [
+    "Update PricingServiceTest expected total to 170.0",
+    "Update OrderServiceTest expected total to 170.0",
+    "Run order and pricing test suites",
+    "Review payment charge amount for VIP orders"
+  ]
+}

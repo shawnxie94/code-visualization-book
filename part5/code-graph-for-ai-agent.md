@@ -1,132 +1,180 @@
 # 代码图谱如何服务 AI Agent
 
-代码图谱既可以给人看，也可以给 Agent 查。对 AI 来说，图谱最大的价值不是“画图”，而是把大仓库压缩成可查询、可解释、可审计的结构化上下文。
+## 本章要解决的问题
 
-一个真实仓库中，文件数量、依赖关系、测试路径和历史变更都可能非常复杂。Agent 如果只靠读取文件和文本搜索，容易遗漏结构关系。代码图谱提供了另一种方式：让 Agent 通过工具查询软件事实。
+图谱如何成为 Agent 的上下文压缩、边界约束和审计基础？
 
-## 图谱作为上下文压缩层
+## 读者读完应获得什么
 
-代码库包含大量信息，但一次任务通常只需要其中一小部分。图谱可以根据关系筛选上下文。
+1. 能说明图谱查询与纯 RAG 的互补关系。
+2. 能设计最小工具集：find_symbol / callers / impact / tests / rules。
+3. 能描述失败模式与降级策略。
 
-例如，给定一个目标方法，图谱可以返回：
+## 本章不讲什么
 
-- 方法定义位置。
-- 上游调用方。
-- 下游依赖。
-- 所属模块。
-- 相关测试。
-- 最近变更。
-- 运行时路径。
-- Owner 和架构规则。
+- 不绑定单一 Agent 框架。
+- 不把 MCP 当唯一实现。
 
-这些信息比把整个目录塞给 Agent 更有效，因为它们围绕任务组织，并且保留关系。
+## 本章与邻章边界
 
-## 结构化查询优于盲目读文件
+- 本章聚焦**查询与约束**：Agent 通过哪些图谱工具获得结构事实。
+- 不重讲上下文包组装细节（见 Agent 上下文工程），也不展开 PR 证据报告模板（见 Review 证据层）。
 
-Agent 当然可以读文件，但读文件之前应该知道为什么读。图谱查询可以帮助 Agent 做阅读计划。
+---
 
-例如：
+向量检索擅长找“语义相似文本”，代码图谱擅长表达“结构上相关”。Agent 两者都需要。
+
+## 为什么需要图，而不只是 RAG
+
+| 需求 | RAG | 代码图谱 |
+| --- | --- | --- |
+| 找描述相似代码 | 强 | 弱 |
+| 找精确调用方 | 弱 | 强 |
+| 架构规则 | 弱 | 强 |
+| 影响路径 | 弱 | 强 |
+| 可审计轨迹 | 中 | 强 |
+
+改折扣时，“VIP 优惠文案”可能语义相似，但结构无关；`DiscountPolicy.apply` 的调用方才是关键。
+
+## 最小工具面
 
 ```text
-find_symbol("OrderService.cancel")
-find_callers("OrderService.cancel")
-find_callees("OrderService.cancel")
-related_tests("OrderService.cancel")
-impact_analysis(diff)
-architecture_rules("order")
+find_symbol
+find_callers
+find_callees
+impact_analysis
+related_tests
+architecture_rules
 ```
 
-这些查询让 Agent 的工作过程更像有经验的工程师：先定位符号，再看调用关系，再找测试，再评估影响面。
+`PR-42` 上的成功路径：
 
-## RAG 与代码图谱的互补关系
-
-向量检索适合回答“哪些文本和这个问题语义相关”。它能发现命名不同但含义接近的文档、注释和代码。
-
-代码图谱适合回答“这些实体之间是什么关系”。它能稳定表达调用、依赖、引用、覆盖、变更和 owner。
-
-二者互补：
-
-- 向量检索找到候选上下文。
-- 图谱查询验证结构关系。
-- 静态分析提供符号和调用。
-- 运行时数据提供真实路径。
-- 变更历史提供演进背景。
-
-只用向量检索，容易缺少结构约束；只用图谱，可能漏掉自然语言需求和文档语义。两者结合更适合仓库级任务。
-
-## MCP 风格工具接口
-
-面向 Agent 的图谱能力应该通过工具接口暴露，而不是只做前端页面。
-
-常见工具可以包括：
-
-- `find_symbol`：查找符号定义。
-- `find_references`：查找引用位置。
-- `find_callers`：查找调用方。
-- `find_callees`：查找被调用方。
-- `impact_analysis`：分析变更影响。
-- `related_tests`：推荐相关测试。
-- `architecture_rules`：查询架构约束。
-- `runtime_paths`：查询运行时 Trace 路径。
-
-工具返回应尽量结构化，包含证据来源和置信度。Agent 可以据此继续阅读文件或执行修改。
-
-## 约束修改范围
-
-图谱不仅提供上下文，还可以约束 AI 行为。
-
-例如：
-
-- 只允许修改影响面内文件。
-- 跨模块修改必须解释原因。
-- 修改公共接口必须列出所有实现和调用方。
-- 修改核心路径必须补充测试。
-- 违反架构规则时阻断提交。
-
-这些约束可以在 Agent 修改前作为提示，也可以在修改后作为检查。它们把代码图谱从“知识库”升级为“治理工具”。
-
-## 查询轨迹审计
-
-Agent 的查询过程应该可记录：
-
-- 它查询了哪些符号。
-- 它查看了哪些调用方。
-- 它是否查了相关测试。
-- 它是否读取了架构规则。
-- 它是否忽略了高风险路径。
-
-查询轨迹可以进入 Review 报告。Reviewer 不仅看最终 Diff，也可以看 Agent 是否进行了必要的上下文检查。
-
-## 图谱结果的表达
-
-Agent 不一定需要图形界面。它更适合消费结构化结果：
-
-```json
-{
-  "symbol": "OrderService.cancel",
-  "callers": ["OrderController.cancel", "OrderJob.retryCancel"],
-  "related_tests": ["OrderServiceTest.cancel_shouldReleaseStock"],
-  "risks": ["核心订单路径", "库存回滚依赖"],
-  "evidence": ["static_call_graph", "coverage_report"]
-}
+```text
+find_symbol(apply)
+ -> find_callers
+ -> related_tests
+ -> architecture_rules
+ -> 生成补丁
+ -> impact_analysis 复核
 ```
 
-人类可以看图，Agent 可以查 JSON，CI 可以消费报告。三者应该共享同一套图谱事实。
+## 上下文压缩
 
-## 图谱维护成本
+图谱帮助把全库压缩为任务子图：
 
-代码图谱不是一次性生成就结束。它需要随代码变化更新：
+```text
+全仓库文件 N
+ -> 相关符号与邻居 K (K << N)
+ -> 提示中只放 K 的关键片段与结构化摘要
+```
 
-- 提交后更新源码结构。
-- 测试后更新覆盖关系。
-- 运行后更新 Trace 和性能属性。
-- PR 合并后更新变更历史。
-- 架构规则变化后重新检查违规依赖。
+压缩的目标不是更短，而是更高密度的正确关系。
 
-如果图谱过时，Agent 会基于错误事实做决定。因此，图谱的更新时间和数据来源必须可见。
+## 边界约束
+
+在工具层强制：
+
+- 默认不允许跨 `out_of_scope` 模块写文件
+- 破坏 `architecture_rules` 时升级为需确认
+- 修改后必须重新查询影响面
+
+这比只在 prompt 里写“请遵守架构”更可靠。
+
+## 失败模式
+
+1. 图谱过期：索引未更新
+2. 低置信调用边被当确定
+3. 工具太多导致 Agent 乱点
+4. 只查不验证，修改后不复核
+
+降级策略：标注不确定、扩大测试范围、请求人工确认。
+
+## 局限
+
+- 图谱质量决定工具上限，过期索引会误导 Agent。
+- 工具集不能消除提示注入与错误任务理解。
+- 对动态行为仍需测试与运行时证据补充。
 
 ## 小结
 
-代码图谱服务 AI Agent 的核心方式，是提供结构化上下文、可查询关系、修改约束和审计证据。它让 Agent 不再只是读取文本，而是能够围绕任务查询软件事实。
+1. 图谱补齐 RAG 在结构关系上的短板。
+2. 小而稳的查询工具集优于万能聊天。
+3. 图谱同时服务压缩、约束和审计。
+4. 修改后复核与改前查询同样重要。
 
-下一章会讨论当 Agent 生成代码之后，如何把这些事实转化为 Review 证据层。
+## 工具编排策略
+
+不建议让 Agent 自由乱点工具。推荐策略：
+
+1. **先 find_symbol** 锁定主实体
+2. **再 find_callers / related_tests** 扩展最小邻居
+3. **architecture_rules** 做边界检查
+4. 修改后 **impact_analysis** 复核
+5. 全过程写入 query_trace
+
+可用状态机约束：
+
+```text
+RESOLVE_SYMBOL -> EXPAND_CONTEXT -> EDIT -> VERIFY -> REPORT
+```
+
+任何一步失败（未知符号、规则失败、测试缺失）都应进入 `needs_confirmation`，而不是继续“自信修改”。
+
+## 与 MCP 的关系
+
+MCP 提供的是工具暴露与调用协议；它不负责：
+
+- 图谱是否正确
+- 检索策略是否合理
+- 权限与多租户
+
+因此协议层与事实层要分开建设：先有可信图谱查询，再包装成 MCP/工具接口。
+
+## 工作示例：失败重试策略
+
+若 `find_symbol("apply")` 返回多个重名：
+
+1. 提高查询精度（限定模块 pricing）
+2. 仍多候选则返回 needs_confirmation
+3. 禁止 Agent 随机挑一个修改
+
+工具层要有“拒绝继续”的能力，这是安全默认，不是功能缺陷。
+
+## 关键要点复盘
+
+围绕「代码图谱如何服务 AI Agent」，读者离开本章前应能做到：
+
+1. 用自己的话解释核心概念与边界
+2. 在 `mini-shop` / `PR-42` 上指出对应实体、路径或产物
+3. 说明它如何服务人或 AI 的具体决策
+4. 列出至少两个局限或失败模式
+5. 知道下一章将把它连接到哪一层能力
+
+若任一做不到，请先复习本章例子与练习，再继续向后读。
+
+## 工具结果如何写进上下文包
+
+```text
+tool: find_callers
+result_summary: 1 high-confidence caller
+injected_into_context:
+ callers: [PricingService.calculateTotal]
+ evidence: edge calls confidence=high
+```
+
+关键是“结果摘要 + 证据引用”一起注入，而不是把原始巨 JSON 全塞给模型。
+
+## 练习
+
+1. 为 `mini-shop` 设计 6 个工具调用序列完成 PR-42。
+2. 说明何时应降低 confidence 并要求人工确认。
+3. 比较 RAG-only 与 Graph+RAG 在“找 apply 调用方”任务上的差异。
+
+## 延伸阅读与参考资料
+
+- [Model Context Protocol](https://modelcontextprotocol.io/)。资料卡：`../docs/research-cards/rc-mcp.md`
+- [Joern CPG](https://docs.joern.io/code-property-graph/)：代码图查询思想。
+- [CodeQL](https://codeql.github.com/docs/)：声明式代码查询参考。
+- [GitHub Copilot docs](https://docs.github.com/en/copilot)。
+- [JSON Schema](https://json-schema.org/)：工具输入输出契约。
+- 本书样例：[`examples/mini-shop/artifacts/code-graph.json`](../examples/mini-shop/artifacts/code-graph.json)。

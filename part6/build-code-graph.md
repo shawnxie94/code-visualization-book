@@ -1,156 +1,181 @@
 # 构建代码图谱
 
-源码采集得到的是一批节点和边，但还不算完整的代码图谱。代码图谱需要稳定的数据模型、查询能力、更新策略和证据来源。
+## 本章要解决的问题
 
-本章把采集结果组织成可查询模型，为后续影响面分析、可视化界面和 Agent 查询接口打基础。
+如何把采集结果变成可查询、可校验的图谱模型？
 
-## 图谱范围
+## 读者读完应获得什么
 
-最小图谱先覆盖以下实体：
+1. 能定义 nodes/edges 表结构。
+2. 能完成候选调用到实体的解析策略。
+3. 能对图谱做基本完整性校验。
 
-- repository
-- file
-- class
-- interface
-- method
-- test
+## 本章不讲什么
 
-最小关系先覆盖：
+- 不引入必须的 Neo4j 集群。
+- 不做分布式图计算。
 
-- contains
-- extends
-- implements
-- calls
-- references
-- covers
-- changes
+---
 
-后续可以再扩展服务、接口、数据库表、消息 topic、owner、Trace 和 PR 等节点。
+采集产出的是素材，图谱构建负责统一 ID、补边、写属性和提供查询。
 
-## 节点表设计
+## 最小存储
 
-节点表可以设计为：
+### JSON
 
-```text
-id                稳定 ID
-type              节点类型
-name              简短名称
-qualified_name    全限定名称
-file_path         源码路径
-start_line        起始行
-end_line          结束行
-properties        JSON 属性
+```json
+{
+ "nodes": [{"id": "...", "type": "method"}],
+ "edges": [{"type": "calls", "from": "...", "to": "..."}]
+}
 ```
 
-`properties` 可以存放复杂度、注解、参数、返回值、测试类型、owner 等扩展信息。初期不必拆得太细，先保证查询可用。
+### SQLite 示意
 
-## 边表设计
-
-边表可以设计为：
-
-```text
-id
-source
-target
-type
-confidence
-source_kind
-properties
+```sql
+CREATE TABLE nodes(
+ id TEXT PRIMARY KEY,
+ type TEXT,
+ name TEXT,
+ file_path TEXT,
+ start_line INT,
+ end_line INT,
+ props_json TEXT
+);
+CREATE TABLE edges(
+ id TEXT PRIMARY KEY,
+ type TEXT,
+ from_id TEXT,
+ to_id TEXT,
+ confidence TEXT,
+ source TEXT
+);
 ```
 
-其中：
+## 调用消解策略（最小）
 
-- `confidence` 表示置信度。
-- `source_kind` 表示边的来源，例如 AST、type_resolver、coverage、git、manual。
-- `properties` 保存行号、调用表达式、观察次数、更新时间等。
+1. 同文件/同类方法名精确匹配
+2. 唯一类名 + 方法名匹配
+3. 多候选时保留 candidates，并标 `confidence=medium`
+4. 无候选则保留未解析调用记录
 
-边的来源非常重要。静态解析出来的调用边、运行时 Trace 确认的调用边、命名约定推断的测试边，证据强度不同。
+对 `mini-shop`，`discountPolicy.apply` 可消解到 `DiscountPolicy.apply`。
 
-## 关系方向
+## 必需边集合
 
-关系方向要保持一致。例如：
+对验收，至少存在：
 
-- `file contains class`
-- `class contains method`
-- `method calls method`
-- `class implements interface`
-- `test covers method`
-- `commit changes method`
+```text
+OrderController.create -> OrderService.createOrder
+OrderService.createOrder -> PricingService.calculateTotal
+PricingService.calculateTotal -> DiscountPolicy.apply
+OrderService.createOrder -> PaymentClient.charge
+tests 边连接两个测试到对应方法
+```
 
-方向一致后，查询会简单很多。查调用方就是反向查 `calls`，查被调用方就是正向查 `calls`。
+参考：[`artifacts/code-graph.json`](../examples/mini-shop/artifacts/code-graph.json)
 
-## 图谱查询能力
+## 校验规则
 
-最小系统应该提供以下查询：
+1. 所有边端点都存在
+2. method 节点有 file/line
+3. 无自环 calls（除非真实递归）
+4. 架构规则可独立存储并查询
 
-- 根据名称查找节点。
-- 查询某个方法的调用方。
-- 查询某个方法的被调用方。
-- 查询某个类的实现或父类。
-- 查询某个文件包含的类和方法。
-- 查询从某个方法到入口的路径。
-- 查询某个方法相关测试。
+## 增量更新
 
-如果用 SQLite，可以通过边表做递归查询；如果用内存图，可以构建正向和反向邻接表；如果用图数据库，可以用图查询语言表达多跳路径。
+文件变更时：
 
-## 版本和增量更新
+1. 删除该文件旧节点与边
+2. 重新采集该文件
+3. 重建相关 calls/tests
+4. 更新 `updated_at`
 
-第一版可以全量重建图谱。每次扫描仓库后，删除旧图谱并重新生成。
+## 局限
 
-当项目变大后，需要增量更新：
-
-- 根据 Git Diff 找到变更文件。
-- 重新解析变更文件。
-- 删除这些文件相关旧节点和旧边。
-- 写入新节点和新边。
-- 更新受影响的跨文件调用关系。
-
-增量更新比全量更新复杂，但对大仓库很重要。
-
-## 处理不确定关系
-
-代码图谱中会有不确定关系。例如调用目标无法唯一解析、测试关联来自命名约定、运行时 Trace 受采样影响。
-
-不要删除不确定关系，也不要把它们当成确定事实。更好的做法是保留关系，并标注：
-
-- 来源。
-- 置信度。
-- 推断规则。
-- 是否被运行时证据确认。
-
-这样，后续报告可以说“该影响路径来自静态候选调用，未被运行时证据确认”，而不是给出过度确定的结论。
-
-## 图谱数据校验
-
-构建图谱后，需要做基础校验：
-
-- 节点 ID 是否唯一。
-- 边的 source 和 target 是否存在。
-- 关系类型是否在允许列表中。
-- 源码位置是否有效。
-- 是否存在明显重复边。
-- 是否存在解析失败文件。
-
-这些校验能避免后续分析建立在坏数据上。
-
-## 输出格式
-
-图谱可以同时输出两种格式：
-
-- 机器可读 JSON：供查询接口和 Agent 使用。
-- 人类可读报告：展示统计信息和采集质量。
-
-报告可以包含：
-
-- 文件数。
-- 类和方法数量。
-- 调用边数量。
-- 解析失败文件。
-- 外部依赖数量。
-- 候选边和确定边比例。
+- 最小消解策略在重载/多态场景会留下候选。
+- JSON 方案不适合超大规模仓，需后续分层存储。
+- 框架注入边需要专用增强，不会凭空出现。
 
 ## 小结
 
-代码图谱是实践项目的核心数据层。它把采集到的源码结构组织成可查询事实，并保留来源、置信度和源码位置。
+1. 先有干净模型，再谈高级图算法。
+2. 消解允许候选，但必须标置信度。
+3. 校验器比“看起来有数据”更重要。
+4. JSON/SQLite 足够支撑全书实践。
 
-下一章会使用这张图谱构建变更影响分析。
+## 进阶要点：增量更新事务
+
+文件级重建时建议：
+
+```text
+begin
+ delete nodes/edges where file_path = F
+ insert new nodes/edges for F
+ re-link unresolved calls touching F
+commit
+```
+
+并记录 `index_version` 与 `updated_at`。Agent 查询若发现索引过期，应明确报错，而不是静默返回陈旧图。
+
+## 工作示例：未解析调用的诚实表达
+
+```json
+{
+ "type": "calls_unresolved",
+ "from": "method:X#y",
+ "callee_text": "foo.bar",
+ "confidence": "low"
+}
+```
+
+宁可保留 unresolved，也不要为了“图好看”伪造精确边。Agent 与 Reviewer 都需要知道哪里不确定。
+
+## 常见问题：构建图谱
+
+### 候选调用要不要丢弃？
+
+不要丢，标记 confidence。
+
+### 如何做增量？
+
+按文件删旧建新并重链。
+
+### 如何防陈旧索引？
+
+index_version + 过期报错。
+
+## 本章检查清单
+
+1. schema 清晰
+2. 消解策略
+3. 校验器
+4. 增量更新
+5. 金标链可查
+
+## 关键要点复盘
+
+围绕「构建代码图谱」，读者离开本章前应能做到：
+
+1. 用自己的话解释核心概念与边界
+2. 在 `mini-shop` / `PR-42` 上指出对应实体、路径或产物
+3. 说明它如何服务人或 AI 的具体决策
+4. 列出至少两个局限或失败模式
+5. 知道下一章将把它连接到哪一层能力
+
+若任一做不到，请先复习本章例子与练习，再继续向后读。
+
+## 练习
+
+1. 写出 nodes/edges 的最小 SQL schema。
+2. 对 `discountPolicy.apply` 给出消解策略与 confidence。
+3. 列出 4 条图谱完整性校验。
+
+## 延伸阅读与参考资料
+
+- [SQLite docs](https://www.sqlite.org/docs.html)。资料卡：`../docs/research-cards/rc-sqlite.md`
+- [Neo4j modeling](https://neo4j.com/docs/getting-started/data-modeling/)。资料卡：`../docs/research-cards/rc-neo4j-modeling.md`
+- [Joern CPG](https://docs.joern.io/code-property-graph/)
+- [LSP](https://microsoft.github.io/language-server-protocol/)。资料卡：`../docs/research-cards/rc-lsp.md`
+- [JSON Graph / property graph 实践综述入口](https://neo4j.com/docs/)
+- 样例：[`code-graph.json`](../examples/mini-shop/artifacts/code-graph.json)

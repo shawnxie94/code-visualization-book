@@ -1,180 +1,175 @@
 # 符号表、作用域与类型关系
 
-AST 解决了代码结构问题，但很多代码理解问题还需要语义信息。比如一个变量引用到底指向哪个定义，一个方法调用实际属于哪个类，一个接口有哪些实现。这些问题不能只靠树结构回答，需要符号表、作用域和类型关系。
+## 本章要解决的问题
 
-如果说 AST 让工具知道“这里有一个名字”，符号和类型系统则让工具知道“这个名字指向谁”。这一层是 IDE 跳转、引用查找、调用图、自动重构和影响面分析的核心。
+为什么有了 AST 还不够？名字、作用域和类型如何把“表达式”变成“可导航关系”？
 
-## 什么是符号
+## 读者读完应获得什么
 
-符号可以理解为程序中有名字的实体。常见符号包括：
+1. 能解释符号、定义、引用、作用域、类型的基本关系。
+2. 能说明 IDE“跳转到定义”背后需要哪些查询。
+3. 能在 `mini-shop` 上区分同名文本与真实绑定。
 
-- 包、模块、命名空间。
-- 类、接口、枚举、结构体。
-- 方法、函数、构造函数。
-- 字段、变量、常量、参数。
-- 类型别名、泛型参数。
+## 本章不讲什么
 
-符号表记录这些实体的声明位置、类型、可见范围和其他属性。它把“文本里的名字”提升为“程序里的实体”。
+- 不完整实现类型推断算法。
+- 不覆盖所有 OOP/泛型边角。
 
-例如：
+---
 
-```java
-class OrderService {
-    private final OrderRepository repository;
+![定义-引用绑定示意](../imgs/fig-04-def-ref.svg)
 
-    void create(Order order) {
-        repository.save(order);
-    }
-}
-```
+AST 告诉我们“这里有一个名字、一次调用”，但还不能稳定回答：
 
-这里至少包含 `OrderService`、`OrderRepository`、`repository`、`create`、`Order`、`order`、`save` 等符号或符号引用。AST 能识别它们的位置，符号解析需要进一步判断每个名字对应哪个定义。
+- 这个名字定义在哪里？
+- 它在当前作用域是否可见？
+- 调用应绑定到哪个方法？
+
+符号表、作用域和类型系统补的就是这一层。
 
 ## 定义与引用
 
-代码理解中最基础的一类边是“定义 - 引用”关系。
-
-- 定义：符号在哪里声明。
-- 引用：符号在哪里被使用。
-- 定义到引用：这个声明影响哪些使用位置。
-- 引用到定义：这个使用位置来自哪个声明。
-
-IDE 的“跳转到定义”和“查找所有引用”，本质上就是在定义和引用之间导航。
-
-这类关系对代码可视化很重要。比如一个字段被多个模块读写时，定义引用图能帮助判断修改字段类型会影响哪些位置。一个公共方法被很多调用方引用时，引用关系也是影响面分析的基础。
-
-## 作用域：名字在哪里有效
-
-作用域决定一个符号在代码中的可见范围。没有作用域解析，工具很容易把名字相同但语义不同的实体混在一起。
-
-例如：
+以 `mini-shop` 为例：
 
 ```java
-class Example {
-    private User user;
+private final DiscountPolicy discountPolicy;
 
-    void update(User user) {
-        this.user = user;
-    }
-}
+double total = discountPolicy.apply(customerType, amount);
 ```
 
-这里有两个 `user`：一个是字段，一个是方法参数。`this.user` 指向字段，右侧 `user` 指向参数。字符串搜索无法区分，AST 只能看到名字，作用域解析才能判断引用目标。
+- 定义：字段 `discountPolicy` 的声明
+- 引用：方法体中的 `discountPolicy`
+- 调用引用：`apply` 应绑定到 `DiscountPolicy.apply`
 
-常见作用域包括：
+如果只有 AST，你只知道有一个标识符；有了符号信息，才能建立：
 
-- 全局作用域。
-- 模块或包作用域。
-- 类作用域。
-- 方法作用域。
-- 块级作用域。
-- 闭包或函数作用域。
-
-不同语言的规则差异很大。JavaScript 的 `var`、`let`、闭包和模块系统，与 Java 的类和方法作用域就不一样。因此，符号解析通常需要语言专用工具。
-
-## 类型解析：知道值是什么
-
-类型信息回答的是“这个表达式是什么类型”。在静态类型语言中，类型通常可以从声明、泛型、继承和类型推断中获得。在动态语言中，类型可能需要运行时信息、类型注解或测试执行来辅助推断。
-
-类型解析可以支持：
-
-- 判断字段和变量的类型。
-- 判断一个方法调用属于哪个类。
-- 判断接口有哪些实现。
-- 判断重载方法的具体目标。
-- 判断泛型类型参数的实际约束。
-
-类型解析对调用图非常关键。没有类型信息，`service.create()` 只能得到一个方法名；有了类型信息，工具才能把它连接到 `OrderService.create` 或其他具体实现。
-
-## 继承、实现、重载与重写
-
-面向对象语言中，类型关系会让调用分析变得更复杂。
-
-接口和实现关系意味着同一个接口方法可能有多个实现。继承和重写意味着父类引用可能在运行时调用子类方法。重载意味着同名方法可能根据参数类型解析到不同目标。
-
-例如：
-
-```java
-interface PaymentService {
-    void pay(Order order);
-}
-
-class WechatPaymentService implements PaymentService {
-    public void pay(Order order) {}
-}
-
-class AliPaymentService implements PaymentService {
-    public void pay(Order order) {}
-}
+```text
+ref:discountPolicy --resolves_to--> field:PricingService.discountPolicy
+call:apply --resolves_to--> method:DiscountPolicy#apply
 ```
 
-如果代码里出现：
+## 作用域
 
-```java
-paymentService.pay(order);
+作用域决定名字可见性。常见层次：
+
+```text
+编译单元/文件
+ -> 类/接口
+ -> 方法
+ -> 语句块
 ```
 
-静态分析可能只能知道它调用的是 `PaymentService.pay`，但具体实现取决于依赖注入配置、运行时条件或业务参数。一个严谨的调用图需要表达这种不确定性：这是一个接口调用，可能分派到多个实现。
+同名变量可以在不同作用域合法共存。代码理解系统必须按作用域解析，而不能全局字符串匹配。
 
-## 符号关系如何进入图谱
+## 类型关系
 
-符号、作用域和类型关系可以转化为图谱中的节点和边。
+类型帮助消解重载、继承和接口实现：
 
-节点可以是类、接口、方法、字段、变量、参数。边可以是：
+- 方法参数类型影响重载选择
+- 接口引用可能指向多个实现
+- 泛型擦除/推断影响静态确定性
 
-- `defines`：文件或类定义某个符号。
-- `references`：某个位置引用某个符号。
-- `extends`：类继承父类。
-- `implements`：类实现接口。
-- `overrides`：方法重写父类或接口方法。
-- `calls`：方法调用另一个方法。
-- `typed_as`：变量或表达式拥有某种类型。
+对可视化与影响面来说，类型关系至少应支持：
 
-这些边让代码图谱不只是结构树，而是语义网络。后续的影响面分析、架构治理和 Agent 查询都会依赖这些边。
+| 关系 | 用途 |
+| --- | --- |
+| extends / implements | 架构与层次图 |
+| typed_as | 字段/参数/返回值 |
+| overrides | 多态调用候选 |
+| resolves_to | 精确或候选定义 |
 
-## IDE 能力背后的原理
+## IDE 跳转背后的查询
 
-现代 IDE 和 Language Server 提供的很多能力都建立在符号和类型解析之上：
+“跳转到定义”通常不是魔法，而是：
 
-- 跳转到定义。
-- 查找引用。
-- 自动补全。
-- 重命名重构。
-- 查找实现。
-- 类型提示。
-- 错误诊断。
+```text
+1. 定位光标处 AST 节点
+2. 取标识符与上下文类型
+3. 查符号表得到候选定义
+4. 按作用域/类型排序消解
+5. 跳到定义节点源码位置
+```
 
-代码可视化系统可以复用这些能力。例如通过 Language Server Protocol 获取符号、定义和引用，或者使用语言生态中的编译器 API 提取类型信息。
+“查找引用”则是反向索引：从定义找所有 resolves_to 边。
 
-这也是工程实践中的一个重要选择：如果语言生态已经有成熟 Language Server 或编译器 API，优先复用它们通常比从零实现解析器更稳。
+## 对调用图的影响
 
-## 常见误差和边界
+未做符号消解时，`apply(` 只能得到候选调用；完成消解后，`mini-shop` 可得到较可靠边：
 
-符号和类型解析也不是总能给出唯一答案。常见困难包括：
+```text
+PricingService.calculateTotal -> DiscountPolicy.apply
+OrderService.createOrder -> PricingService.calculateTotal
+```
 
-- 反射和动态加载。
-- 依赖注入和运行时绑定。
-- 多态分派。
-- 泛型擦除或复杂类型推断。
-- 动态语言运行时修改对象结构。
-- 缺失依赖或生成代码未纳入分析。
-
-因此，代码可视化结果需要区分“确定关系”和“候选关系”。例如调用图可以标记某条边来自静态类型解析，另一条边来自框架规则推断，另一条边来自运行时 Trace 确认。
+这对 `PR-42` 影响面分析是前提：变更实体必须能连到真实调用方。
 
 ## 和 AI Agent 的关系
 
-AI Agent 需要知道名字和关系，而不是只看文本。修改一个方法前，它最好能查询：
+Agent 若只搜索 `apply` 文本，可能误伤无关方法。更稳妥的上下文应包含：
 
-- 这个方法在哪里定义。
-- 哪些地方引用了它。
-- 它属于哪个类型。
-- 它重写或实现了哪个接口方法。
-- 它可能影响哪些实现类或调用方。
+- 目标符号 ID
+- 定义位置
+- 直接引用与调用方
+- 类型与模块边界
 
-这些查询都依赖符号表、作用域和类型关系。如果没有这一层，Agent 容易把同名方法混淆，或者只修改一个实现却遗漏接口和测试。
+也就是把符号层事实写进上下文包，而不是只贴源码片段。
+
+## 局限
+
+- 动态语言、反射、依赖注入会降低静态绑定精度。
+- 跨项目/生成代码需要额外索引。
+- 多实现多态时往往只能给候选集，不能假装唯一确定。
 
 ## 小结
 
-AST 让工具看见代码结构，符号表、作用域和类型关系让工具理解代码语义。定义引用、类型解析、继承实现和方法分派，是调用图、影响面分析和自动重构的基础。
+1. AST 给结构，符号与类型给绑定。
+2. 作用域是正确解析名字的前提。
+3. 定义-引用关系是 IDE、调用图和影响面的共同基础。
+4. Agent 上下文应使用符号 ID，而不是裸字符串。
 
-下一章会继续从语义结构走向程序行为：当我们想知道代码可能如何执行、数据如何传播时，就需要 IR、SSA、CFG 和 DFG。
+## 解析不确定时的工程策略
+
+当静态绑定无法唯一确定时，系统不应假装唯一：
+
+```text
+resolves_to candidates = [ImplA.m, ImplB.m]
+confidence = medium
+reason = polymorphic_receiver
+```
+
+对影响面，这意味着路径要按候选集合扩展；对 Agent，这意味着修改前要更高确认级别。把不确定性藏起来，比“查不到”更危险。
+
+## mini-shop 中的绑定练习
+
+- `discountPolicy`：字段定义在 `PricingService`
+- `apply`：绑定到 `DiscountPolicy.apply`
+- `save`：绑定到 `OrderRepository.save`，不能与日志文本混淆
+
+这三条是后续调用图与 PR-42 影响面的前提。
+
+## 关键要点复盘
+
+围绕「符号表、作用域与类型关系」，读者离开本章前应能做到：
+
+1. 用自己的话解释核心概念与边界
+2. 在 `mini-shop` / `PR-42` 上指出对应实体、路径或产物
+3. 说明它如何服务人或 AI 的具体决策
+4. 列出至少两个局限或失败模式
+5. 知道下一章将把它连接到哪一层能力
+
+若任一做不到，请先复习本章例子与练习，再继续向后读。
+
+## 练习
+
+1. 在 `PricingService` 中标出 `discountPolicy` 的定义点与引用点。
+2. 说明为何“同名 apply”不能直接当精确调用边。
+3. 用 LSP 的 go-to-definition / find-references 类比，写出图谱应支持的两条查询。
+
+## 延伸阅读与参考资料
+
+- [JLS §6 Names](https://docs.oracle.com/javase/specs/jls/se17/html/jls-6.html)：名称与作用域一级规则。资料卡：`../docs/research-cards/rc-jls-names.md`
+- [Language Server Protocol](https://microsoft.github.io/language-server-protocol/)：定义/引用查询的协议化。资料卡：`../docs/research-cards/rc-lsp.md`
+- [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API)：类型与符号信息工程入口。
+- [JavaParser Symbol Solver 相关文档](https://javaparser.org/)：Java 符号解析实践。
+- [Oracle Java Tutorials: Packages/Names](https://docs.oracle.com/javase/tutorial/java/package/index.html)：包与可见性基础。
+- 本书案例：[`examples/mini-shop/`](../examples/mini-shop/)。

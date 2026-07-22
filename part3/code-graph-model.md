@@ -1,173 +1,173 @@
 # 代码图谱：节点、边与属性
 
-代码图谱是把代码事实组织成可查询模型的一种方式。它不只是画图，而是把源码结构、程序分析、运行时数据、变更历史和组织信息统一到同一套节点、边和属性里。
+## 本章要解决的问题
 
-如果说前几章分别介绍了静态、动态和变更数据，那么代码图谱要做的就是把这些数据连接起来。它让系统可以回答跨数据源的问题：这次变更影响哪些入口，相关测试是什么，是否处于高频运行路径，哪个团队负责，历史上是否频繁出问题。
+代码事实如何被建模成统一图谱？最小模型需要哪些节点与边？
 
-## 图谱的基本模型
+## 读者读完应获得什么
 
-一个图由节点和边组成。节点表示实体，边表示实体之间的关系，属性描述节点或边的状态。
+1. 能为 `mini-shop` 定义节点、边和关键属性。
+2. 能写出 3 到 5 个有工程价值的查询。
+3. 能在 JSON/SQLite 与图数据库之间做取舍。
 
-在代码图谱中，节点可以是代码实体，也可以是运行时实体、变更实体和组织实体。边可以来自语法结构、调用关系、依赖关系、测试覆盖、运行时 Trace 或 Git 历史。
+## 本章不讲什么
 
-代码图谱的目标不是把所有东西都画出来，而是建立一个统一事实层。图只是它的一种输出方式。
+- 不绑定唯一图数据库产品。
+- 不追求一次覆盖所有语言语义。
+
+---
+
+代码图谱是软件理解系统的核心数据层。它把结构、关系、行为、演进和组织事实放到可查询模型中。
+
+## 最小 schema
+
+### 节点类型
+
+- `module` / `file` / `class` / `method` / `test`
+- 可扩展：`route`、`config`、`pr`、`owner`
+
+### 边类型
+
+- `contains`、`calls`、`tests`、`depends_on`
+- 可扩展：`covers`、`owns`、`changed_in`
+
+### 关键属性
+
+```text
+id, name, qualified_name
+file_path, start_line, end_line
+source, confidence, updated_at
+```
+
+## mini-shop 实例
+
+完整样例：[`examples/mini-shop/artifacts/code-graph.json`](../examples/mini-shop/artifacts/code-graph.json)
+
+核心调用链：
 
 ```mermaid
 flowchart LR
-  Repo["Repository"] -->|contains| File["File"]
-  File -->|contains| Class["Class"]
-  Class -->|contains| Method["Method"]
-  Method -->|calls| Callee["Method"]
-  Test["TestCase"] -->|covers| Method
-  Commit["Commit/PR"] -->|changes| Method
-  Team["Team/Owner"] -->|owns| Class
-  Trace["Trace/Span"] -->|observes| Method
+ OC[OrderController.create] --> OS[OrderService.createOrder]
+ OS --> PS[PricingService.calculateTotal]
+ PS --> DP[DiscountPolicy.apply]
+ OS --> PC[PaymentClient.charge]
 ```
+![mini-shop 核心调用图谱（精确技术图）](../imgs/fig-07-mini-shop-graph.svg)
 
-> 后续 AI 配图备注：可生成一张“代码图谱节点和边”的海报式解释图，节点颜色区分代码、测试、运行时、变更、组织五类实体。
+## 有工程价值的查询
 
-## 节点设计
+1. **find_symbol**
+ `DiscountPolicy.apply` 定义在哪？
+2. **find_callers**
+ 谁调用了 `DiscountPolicy.apply`？
+3. **impact_analysis**
+ 从变更方法出发的反向路径与入口？
+4. **related_tests**
+ 哪些测试覆盖该调用链？
+5. **architecture_rules**
+ `pricing` 是否依赖 `payment`？
 
-常见节点包括：
+这些查询直接服务 PR 影响面和 Agent 上下文包。
 
-- Repository：仓库。
-- Module：模块或子项目。
-- Package：包或命名空间。
-- File：文件。
-- Class / Interface：类和接口。
-- Method / Function：方法和函数。
-- Route / API：接口入口。
-- Service：服务或应用。
-- DatabaseTable：数据库表。
-- MessageTopic：消息 topic。
-- TestCase：测试用例。
-- PullRequest / Commit：变更记录。
-- Team / Owner：团队或负责人。
+## 存储取舍
 
-节点粒度要服务问题。影响面分析通常需要方法级节点，架构治理通常需要模块和服务级节点，AI 上下文工程则需要文件、符号、调用路径和测试节点共同参与。
+| 方案 | 优点 | 适用 |
+| --- | --- | --- |
+| JSON 文件 | 简单可讲解 | 教学与最小原型 |
+| SQLite | 可 SQL 查询、易分发 | 本地工具 |
+| 图数据库 | 深层路径与图算法 | 大规模扩展 |
 
-如果粒度太粗，无法定位具体影响；如果粒度太细，图会过大且难以解释。实践中常用多层建模：从服务到模块，从模块到文件，从文件到类和方法。
+本书实践优先 JSON/SQLite 讲清模型，图数据库作为扩展。
 
-## 边设计
+## 多源融合原则
 
-边表示实体之间的关系。常见边包括：
+同一条 `calls` 边可能来自静态解析或动态观测。属性中应保留：
 
-- `contains`：包含关系，例如文件包含类，类包含方法。
-- `imports`：导入关系。
-- `depends_on`：模块或服务依赖。
-- `calls`：方法调用。
-- `references`：引用某个符号。
-- `extends`：继承关系。
-- `implements`：实现关系。
-- `reads` / `writes`：读写资源或字段。
-- `covers`：测试覆盖代码。
-- `changes`：提交或 PR 修改代码实体。
-- `co_changes_with`：文件或模块经常共同变更。
-- `owns`：团队或 owner 负责某实体。
+- `source`
+- `confidence`
+- `evidence_refs`
 
-边必须有类型和方向。`A calls B` 和 `B calls A` 的含义完全不同。调用边、依赖边、覆盖边和拥有边也不应该混成一种关系。
+冲突时按策略合并，而不是静默覆盖。
 
-边还可以带属性，例如调用次数、平均耗时、置信度、来源、最后更新时间。
+## 局限
 
-## 属性设计
-
-属性让图谱不仅表达结构，也表达状态和风险。
-
-节点属性可以包括：
-
-- 源码路径和行号。
-- 复杂度。
-- 覆盖率。
-- 变更频率。
-- 最近修改时间。
-- 主要作者。
-- 运行时耗时。
-- 错误率。
-- 风险等级。
-
-边属性可以包括：
-
-- 关系来源：静态解析、运行时 Trace、配置推断、人工标注。
-- 置信度。
-- 观察次数。
-- 平均耗时。
-- 首次出现和最后出现时间。
-
-属性是从“结构图”走向“证据图”的关键。同样是一个调用边，如果它是生产高频路径，含义就不同于只在测试中出现的调用边。
-
-## 多源数据如何融合
-
-代码图谱要处理来自不同系统的数据。一个方法节点可能来自 AST，一个调用边可能来自静态分析，一个运行时耗时属性来自 Trace，一个覆盖关系来自测试报告，一个 owner 来自代码所有权配置。
-
-融合时要解决三个问题：
-
-1. 身份匹配：不同数据源如何指向同一个实体。
-2. 时间同步：数据是否来自同一个版本或时间窗口。
-3. 证据来源：某个关系或属性来自哪里，是否可信。
-
-例如方法签名变化后，历史 Coverage 和当前源码如何对应；文件重命名后，Git 历史是否还能追踪；服务改名后，Trace 中的服务名如何映射到仓库模块。这些都是工程实现中必须处理的问题。
-
-## 存储选择
-
-小型系统可以用 JSON、SQLite 或关系数据库保存节点表和边表。这样实现简单，便于教学和调试。
-
-大型系统可以考虑图数据库或专门的索引服务。图数据库适合多跳关系查询，例如查找从变更方法到业务入口的路径。但图数据库也会带来运维、建模和性能成本。
-
-选择存储时，不要只看“图谱”这个词。关键问题是：
-
-- 查询模式是什么。
-- 数据规模多大。
-- 是否需要增量更新。
-- 是否需要多版本对比。
-- 是否需要和 CI、IDE、Agent 工具集成。
-
-实践项目可以先用简单存储验证模型，等查询复杂度上升后再换更强的后端。
-
-## 查询能力
-
-代码图谱至少应该支持几类查询：
-
-- 查符号：某个类或方法在哪里定义。
-- 查调用方：谁调用了目标方法。
-- 查被调用方：目标方法依赖哪些下游。
-- 查路径：从入口到目标方法有哪些路径。
-- 查影响面：某次变更可能影响哪些入口和测试。
-- 查 owner：哪个团队负责目标代码。
-- 查风险：目标代码是否高复杂度、低覆盖、高频变更。
-
-这些查询既可以服务人类界面，也可以服务 AI Agent。
-
-## 代码图谱与普通关系图的区别
-
-普通关系图通常是一次性展示结果，代码图谱是可持续维护的事实层。
-
-普通图回答“看起来有什么关系”，代码图谱回答“系统里有哪些可查询的事实”。它可以生成可视化视图，也可以输出报告、推荐测试、检查架构规则、支持 Agent 查询。
-
-因此，代码图谱不应该只被设计成前端图形。它需要稳定 ID、数据来源、更新时间、查询接口和增量更新机制。
-
-## 和 AI Agent 的关系
-
-对 AI Agent 来说，代码图谱是上下文压缩和结构化查询层。
-
-Agent 可以用图谱回答：
-
-- 这个任务相关文件有哪些。
-- 目标方法的调用方是谁。
-- 这次修改影响哪些测试。
-- 是否跨越架构边界。
-- 哪些历史 PR 和目标代码相关。
-
-相比把整个仓库塞进上下文，图谱查询更可控，也更容易审计。Agent 查过什么、依据哪些边做出判断，都可以记录下来，作为 Review 的一部分。
+- 模型过粗会丢关键语义，过细会难维护
+- ID 稳定性决定演进分析能否成立
+- 查询性能与增量更新需要工程投入
 
 ## 小结
 
-代码图谱把静态结构、动态运行、变更历史和组织信息组织成统一事实层。节点、边和属性不是为了画一张大图，而是为了支持查询、解释和验证。
+1. 代码图谱用节点/边/属性统一软件事实。
+2. 最小模型即可支撑影响面与 Agent 查询。
+3. 查询设计应先于可视化炫技。
+4. 存储选择服务可复现，而不是先追求规模。
 
-下一章会讨论如何把图谱和分析结果表达给人：可视化不应停留在漂亮图形，而要变成可追溯的工程证据。
+## 查询体验的最低标准
+
+图谱是否成功，不看节点数，而看能否在 3 次查询内回答：
+
+1. 这个符号在哪？
+2. 谁调用它？
+3. 哪些测试锁住它？
+
+对 `DiscountPolicy.apply`，金标答案应稳定可复现。若三次查询仍要靠全文搜索碰运气，说明模型或索引未达标。
+
+## 工作示例：五个金标查询
+
+| 查询 | 期望 |
+| --- | --- |
+| find_symbol(DiscountPolicy.apply) | method 节点 + 文件行号 |
+| find_callers(apply) | calculateTotal |
+| find_callees(createOrder) | calculateTotal, charge, save |
+| related_tests(apply) | PricingServiceTest, OrderServiceTest |
+| architecture_rules(pricing) | pricing-no-payment = pass |
+
+把这五条做成自动化契约测试，实践项目就不会“看起来有图、其实不可用”。
+
+## 常见问题：代码图谱模型
+
+### 必须上图数据库吗？
+
+教学与早期不必；模型正确优先。
+
+### 边太多怎么办？
+
+分层、过滤、任务子图，而不是一次画完。
+
+### 如何防止假精确？
+
+低置信与 unresolved 必须保留。
+
+## 本章检查清单
+
+1. 节点/边/属性是否完整
+2. 是否有证据字段
+3. 金标查询是否可过
+4. 存储取舍是否说明
+
+## 关键要点复盘
+
+围绕「代码图谱：节点、边与属性」，读者离开本章前应能做到：
+
+1. 用自己的话解释核心概念与边界
+2. 在 `mini-shop` / `PR-42` 上指出对应实体、路径或产物
+3. 说明它如何服务人或 AI 的具体决策
+4. 列出至少两个局限或失败模式
+5. 知道下一章将把它连接到哪一层能力
+
+若任一做不到，请先复习本章例子与练习，再继续向后读。
+
+## 练习
+
+1. 为 `mini-shop` 写出 5 个查询及其预期结果。
+2. 设计 `calls` 边的属性：source/confidence/evidence。
+3. 比较 JSON 与 SQLite 在教学原型中的优劣。
 
 ## 延伸阅读与参考资料
 
-- [Backstage Catalog Graph](https://backstage.io/docs/features/software-catalog/creating-the-catalog-graph/)：软件目录中实体关系图的参考。
-- [CodeQL About CodeQL](https://codeql.github.com/docs/codeql-overview/about-codeql/)：把代码建模成可查询数据库的代表性工具。
-- [Neo4j Graph Data Modeling](https://neo4j.com/docs/getting-started/data-modeling/)：图数据建模基础参考。
-- [OpenTelemetry Traces](https://opentelemetry.io/docs/concepts/signals/traces/)：运行时 Trace 如何进入图谱的参考。
+- [Neo4j data modeling](https://neo4j.com/docs/getting-started/data-modeling/)：图建模基础。资料卡：`../docs/research-cards/rc-neo4j-modeling.md`
+- [SQLite docs](https://www.sqlite.org/docs.html)：本地可查询存储。资料卡：`../docs/research-cards/rc-sqlite.md`
+- [Joern Code Property Graph](https://docs.joern.io/code-property-graph/)：代码属性图概念。
+- [Graph Data models overview (academic/engineering surveys)](https://neo4j.com/blog/)：图模型取舍补充阅读。
+- [LSP](https://microsoft.github.io/language-server-protocol/)：符号索引与查询能力对照。资料卡：`../docs/research-cards/rc-lsp.md`
+- 本书样例：[`examples/mini-shop/artifacts/code-graph.json`](../examples/mini-shop/artifacts/code-graph.json)。

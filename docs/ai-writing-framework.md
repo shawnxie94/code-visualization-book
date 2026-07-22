@@ -1,10 +1,21 @@
 # AI 写作与资料收集框架
 
-本文档用于指导《Code Visualization》新版内容写作。当前正式目录以 [`book-outline.md`](book-outline.md) 为准，调研背景见 [`research-ai-code-visualization-2026.md`](research-ai-code-visualization-2026.md)。
+本文档用于指导《Code Visualization》内容写作。
+
+## 0. 与出版级终稿的关系
+
+写作时默认追求：
+
+1. **内容尽可能丰富**：Why/What/How/Show/Tradeoff/Apply/Prove 相关层写全。
+2. **权威引用尽可能充分**：优先一级来源与官方文档，关键判断要可回指。
+
+完成标准见 [`definition-of-done.md`](definition-of-done.md) 第 4 节与第 7 节。不要为了丰富而灌水，也不要用低质量链接充数。
+
+正式目录以 [`book-outline.md`](book-outline.md) 为准，调研背景见 [`research-ai-code-visualization-2026.md`](research-ai-code-visualization-2026.md)。
 
 ## 1. 写作目标
 
-新版写作目标不是补齐传统代码可视化工具清单，而是完成一条清晰主线：
+写作目标不是补齐传统代码可视化工具清单，而是完成一条清晰主线：
 
 ```text
 原理 -> 图谱 -> 核心工程场景 -> AI 时代新应用 -> 实践闭环

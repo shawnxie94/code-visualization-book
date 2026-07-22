@@ -1,172 +1,177 @@
 # AI 修改后的验证报告
 
-AI 修改后的验证报告用于帮助 Reviewer 判断改动是否可合并。它应基于代码图谱、影响面分析、测试结果、架构规则和 Agent 查询轨迹生成。
+## 本章要解决的问题
 
-这份报告不是 AI 的自我解释，而是系统根据代码事实生成的证据包。它应该能够被人类独立检查。
+AI 修改后应交付什么验证证据，才能让人和 CI 做出合并判断？
 
-## 报告目标
+## 读者读完应获得什么
 
-验证报告需要回答：
+1. 能定义验证报告模板。
+2. 能把影响面、测试、规则、查询轨迹组装成交付物。
+3. 能用 `PR-42` 完整跑通改后验证故事。
 
-- AI 修改了什么。
-- 为什么这些修改与任务相关。
-- 可能影响哪些入口、模块和测试。
-- 哪些测试建议运行或已经运行。
-- 是否存在未覆盖风险。
-- 是否触碰安全或架构边界。
-- Agent 是否查询过必要上下文。
+## 本章不讲什么
 
-如果报告无法回答这些问题，Reviewer 就只能回到手工排查。
+- 不宣称报告可自动替代负责人决策。
 
-## 改动摘要
+---
 
-改动摘要应该区分不同类型：
+![验证报告信息结构](../imgs/fig-13-verification-report.svg)
 
-- 功能代码改动。
-- 测试代码改动。
-- 配置改动。
-- 文档改动。
-- 重构或格式化改动。
+验证报告是最小系统闭环的最后一环，也是 AI Coding 工具与 Review 流程的交接点。
 
-每个改动项最好映射到代码实体，而不仅是文件名。例如：
-
-```text
-修改方法：OrderService.cancel(Long)
-新增测试：OrderServiceTest.cancel_shouldReleaseStock
-修改配置：order.cancel.timeout
-```
-
-这样报告才能进一步连接影响面和测试证据。
-
-## 影响面摘要
-
-影响面摘要展示从变更实体到业务入口、调用方和相关测试的路径。
-
-报告可以按风险排序：
-
-1. 核心业务入口。
-2. 高频运行路径。
-3. 跨模块影响。
-4. 缺少测试覆盖路径。
-5. 低置信度推断路径。
-
-影响面摘要不需要展示完整图谱，但需要提供证据链接，让 Reviewer 能追溯到源码和图谱路径。
-
-## 测试建议
-
-测试建议应该包含：
-
-- 建议运行的测试。
-- 推荐依据。
-- 是否已经运行。
-- 运行结果。
-- 覆盖缺口。
-
-示例：
-
-```text
-建议测试：OrderControllerTest.cancel_shouldReturnSuccess
-依据：覆盖入口 DELETE /orders/{id}
-状态：未运行
-风险：入口路径受影响但缺少本次验证
-```
-
-如果没有 Coverage 数据，报告应明确说明“测试推荐基于命名和调用关系推断”，避免把候选关系当成确定覆盖。
-
-## 风险节点
-
-风险节点可以来自：
-
-- 高复杂度。
-- 低覆盖率。
-- 高频变更。
-- 生产高频路径。
-- 安全敏感路径。
-- 核心业务模块。
-- 架构边界变化。
-- 低置信度调用边。
-
-报告不需要把所有风险都阻断，但要让 Reviewer 知道应该重点看哪里。
-
-## 架构和安全检查
-
-报告应包含架构规则检查结果：
-
-- 是否新增跨层依赖。
-- 是否修改公共接口。
-- 是否绕过统一访问层。
-- 是否触碰特定 owner 模块。
-
-安全检查可以包含：
-
-- 是否新增用户输入路径。
-- 是否修改权限判断。
-- 是否新增敏感日志。
-- 是否让数据流向危险 Sink。
-
-最小系统可以先做规则提示，后续再接入更强的数据流分析。
-
-## Agent 查询轨迹
-
-查询轨迹是 AI 时代验证报告的新内容。它记录 Agent 是否做了必要上下文查询。
-
-例如：
-
-```text
-Agent 查询记录：
-- find_symbol(OrderService.cancel)
-- find_callers(OrderService.cancel)
-- related_tests(OrderService.cancel)
-- architecture_rules(order)
-```
-
-如果 Agent 没有查询调用方或测试，报告可以提示“上下文检查不足”。这能帮助团队逐步规范 Agent 工作流。
-
-## 报告格式
-
-建议同时输出两种格式：
-
-- Markdown：给人类 Reviewer 阅读。
-- JSON：给 CI、平台和 Agent 继续消费。
-
-Markdown 报告可以放进 PR 描述或评论。JSON 报告可以用于自动规则判断，例如高风险路径未运行测试时阻断合并。
-
-## 示例报告结构
+## 报告模板
 
 ```markdown
-# AI 修改验证报告
+# 验证报告：<PR/任务>
 
 ## 改动摘要
-
-## 影响面
-
-## 建议测试
-
-## 已运行验证
-
-## 风险节点
-
-## 架构和安全检查
-
-## Agent 查询轨迹
-
-## Reviewer 检查清单
+## 变更实体
+## 影响路径
+## 相关测试与结果
+## 架构/安全规则
+## 风险与残留不确定点
+## 查询轨迹
+## 建议动作
 ```
 
-## Reviewer 检查清单
+完整示例：[`artifacts/verification-report-pr-42.md`](../examples/mini-shop/artifacts/verification-report-pr-42.md)
 
-最终报告应该转化为动作：
+## PR-42 故事线
 
-- 是否确认改动范围符合任务。
-- 是否查看高风险影响路径。
-- 是否运行建议测试。
-- 是否检查未覆盖路径。
-- 是否检查权限和数据流。
-- 是否确认架构规则没有违规。
-- 是否需要 owner 追加审核。
+1. Agent 领取“调整 VIP 折扣”任务
+2. 通过查询接口构建上下文包
+3. 修改 `DiscountPolicy.apply`
+4. 运行影响面分析
+5. 发现测试断言需从 180.0 更新到 170.0
+6. 更新测试并重跑
+7. 导出验证报告供 Review
+
+## 字段来源
+
+| 字段 | 来源模块 |
+| --- | --- |
+| 变更实体 | analysis/diff mapper |
+| 影响路径 | graph callers search |
+| 测试 | related_tests + test runner |
+| 规则 | architecture_rules |
+| 查询轨迹 | api query logger |
+
+## 机器可读 + 人可读
+
+同时输出：
+
+- `verification-report.json`（CI/工具消费）
+- `verification-report.md`（人读/PR 注释）
+
+二者字段同源，避免两套真相。
+
+## 合并建议逻辑（示例）
+
+```text
+if architecture_fail: block
+elif high_risk and tests_missing: block
+elif medium_risk and tests_green: approve_with_notes
+else: manual_review
+```
+
+逻辑应可配置，并始终展示 reasons。
+
+## 验收
+
+- 对 PR-42 生成报告
+- 含路径、测试、风险、轨迹
+- 可被 UI 与 PR 注释复用
+- 与 impact-report 数据一致
+
+## 局限
+
+- 报告质量受图谱与测试质量上限约束。
+- 自动合并建议不能替代责任人决策。
+- 跨系统副作用（配置中心、特性开关）可能不在报告内。
 
 ## 小结
 
-AI 修改后的验证报告是本书实践闭环的终点。它把源码结构、代码图谱、影响面分析、测试建议、架构规则和 Agent 查询轨迹汇总为可审查证据。
+1. 验证报告是 AI 修改的标准交付物。
+2. 证据必须同源、可回跳、可机读。
+3. 测试与规则结果要进入同一报告。
+4. 到这里，最小代码理解闭环完整闭合。
 
-完成这份报告后，一个最小代码理解系统就具备了基本价值：它不仅能帮助人理解代码，也能帮助 AI 在工程约束下修改代码，并帮助 Reviewer 判断修改是否可信。
+## 报告分级模板
+
+### Blocker
+架构规则失败 / 高危路径无测试 / 解析失败
+
+### Major
+金额/权限语义变化、跨模块影响、测试需更新未更新
+
+### Minor
+日志文案、低置信候选边、文档同步
+
+`PR-42` 至少是 Major：金额语义变化 + 测试断言过期。
+
+## 工作示例：JSON 与 Markdown 同源
+
+JSON：
+
+```json
+{"risk":{"level":"medium","reasons":["money_path","tests_stale"]}}
+```
+
+Markdown：
+
+```markdown
+风险：中
+原因：金额路径；测试断言过期
+```
+
+禁止两套手写结果；必须由同一 `Report` 对象渲染，否则 CI 与人工评论会打架。
+
+## 常见问题：验证报告
+
+### 报告由谁生成？
+
+系统生成；模型只能起草说明。
+
+### 能否自动合并？
+
+可建议，不可默认免责自动合并高风险变更。
+
+### JSON 和 Markdown 哪个权威？
+
+同一对象双渲染，禁止两套手写。
+
+## 本章检查清单
+
+1. 字段同源
+2. 风险可解释
+3. 测试结果纳入
+4. 轨迹可回放
+5. 门禁策略透明
+
+## 关键要点复盘
+
+围绕「AI 修改后的验证报告」，读者离开本章前应能做到：
+
+1. 用自己的话解释核心概念与边界
+2. 在 `mini-shop` / `PR-42` 上指出对应实体、路径或产物
+3. 说明它如何服务人或 AI 的具体决策
+4. 列出至少两个局限或失败模式
+5. 知道下一章将把它连接到哪一层能力
+
+若任一做不到，请先复习本章例子与练习，再继续向后读。
+
+## 练习
+
+1. 按模板重写 PR-42 报告的“建议动作”部分。
+2. 设计 machine-readable JSON 与 Markdown 的字段映射表。
+3. 给出 merge 门禁伪策略，并说明为何不能完全自动免责。
+
+## 延伸阅读与参考资料
+
+- [SARIF](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)。资料卡：`../docs/research-cards/rc-sarif.md`
+- [GitHub PR comments API 概念](https://docs.github.com/en/rest/issues/comments)
+- [JUnit XML 报告生态](https://github.com/testmoapp/junitxml)
+- [CodeQL scanning](https://codeql.github.com/docs/codeql-overview/about-code-scanning-with-codeql/)
+- [Test Impact Analysis](https://learn.microsoft.com/en-us/azure/devops/pipelines/test/test-impact-analysis)。资料卡：`../docs/research-cards/rc-test-impact.md`
+- 样例：[`verification-report-pr-42.md`](../examples/mini-shop/artifacts/verification-report-pr-42.md)
