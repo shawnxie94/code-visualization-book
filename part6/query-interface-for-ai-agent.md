@@ -25,6 +25,20 @@ Agent 应该通过哪些结构化工具查询代码图谱？
 4. 查询可追踪
 5. 写操作与查询分离
 
+## 接口设计的第一层挣扎：什么算“一个工具”
+
+第一次给 Agent 开口时，容易掉进两个极端：要么只给一个“问仓库”的万能工具，要么把每个小查询都做成工具。前者等于没有契约，Agent 只是换了个方式读文本；后者会让 Agent 在选择工具上耗尽上下文——Anthropic 在 context engineering 里也强调“人类工程师说不清该用哪个工具时，模型只会做得更差”。
+
+折中判据是看**下游消费**：一个查询结果要被哪些字段消费，就独立成一个工具。`related_tests` 之所以独立于 `find_callers`，是因为验证报告和测试门禁只吃 `tests` 字段；`architecture_rules` 独立，是因为 CI 门禁和 Review 证据只吃 `rules`。工具边界跟着消费端走，而不是跟着实现难度走。
+
+对这 5 个工具，它们恰好覆盖了 Agent 改码周期的完整闭环：
+
+```text
+定位（find_symbol）→ 扩展（find_callers/callees）→ 影响（impact_analysis）→ 验证（related_tests）→ 约束（architecture_rules）
+```
+
+少一个，闭环就断一环：没有 `related_tests`，Agent 就不知道要跑什么测试；没有 `architecture_rules`，它只会“看起来合理地”跨模块。
+
 ## 工具清单
 
 ### find_symbol
@@ -120,11 +134,24 @@ cv-query find_callers --id method:DiscountPolicy#apply
 
 再包装为 MCP tools 或 HTTP JSON。
 
-## 错误处理
+## 错误处理：失败必须结构化，否则会被当成“无影响”
 
-- 未知符号：返回 empty + suggestion
+接口最常见的隐性缺陷是：查询失败时返回一个空数组。Agent 收到 `[]` 后不会认为“查询出错了”，而会认为“没有相关信息”——这对 `impact_analysis` 是灾难性的：空影响面会被解读成“改动没有影响，可以合并”。
+
+因此错误必须用结构区分于空结果：
+
+```text
+空结果（真实）  : ok=true, result=[]
+失败（系统性）  : ok=false, error=UNKNOWN_SYMBOL / INDEX_STALE / PERMISSION_DENIED
+```
+
+具体约定：
+
+- 未知符号：返回 `ok=false` + `suggestion`（如“是否指 `DiscountPolicy.apply`？”）
 - 低置信结果：`confidence=low` 且 `needs_confirmation=true`
-- 图未索引：明确错误，不可用幻觉补全
+- 图未索引：明确错误，绝不用幻觉补全
+
+一句话判断：**如果失败被当成空结果会误导决策，就必须区分。** 这是查询接口与普通 REST API 的关键差别——因为消费方是会把“空”当结论的 Agent。
 
 ## 验收
 
@@ -164,6 +191,7 @@ sequenceDiagram
 2. schema 与证据字段是接口核心。
 3. 查询轨迹是审计能力。
 4. 实现可从 CLI 平滑升级到 MCP。
+5. 失败必须与空结果结构化区分——Agent 会把“空”当结论。
 
 ## 安全与权限最小集
 

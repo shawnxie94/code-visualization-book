@@ -95,7 +95,7 @@
 
 ## 下一步动作
 
-本地内容门槛已完成一轮定稿升格与加厚。剩余动作：
+本地内容门槛已完成一轮定稿升格与加厚（含 part6 实践章叙述纵深轮：build-code-graph / collect-source-structure / query-interface / build-change-impact-analysis 均补失败推导与对照实验，见 changelog）。剩余动作：
 
 1. 持续勘误（病句、链接、数字一致性）。
 2. 在作者明确授权后推送，并验证公开站点同步本仓库 RC 文稿（E006）。

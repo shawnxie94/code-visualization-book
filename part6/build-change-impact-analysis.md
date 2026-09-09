@@ -29,15 +29,27 @@
 7. emit report json/md
 ```
 
-## Diff 映射
+## Diff 映射：把“改了哪几行”升级为“改了哪个实体”
 
-对 `pr-42.diff`，变更行落入 `DiscountPolicy.apply` 方法区间，故：
+对 `pr-42.diff`，变更行（`return amount * 0.9` → `0.85`）落在 `DiscountPolicy.apply` 方法区间，故：
 
 ```text
 changed_entities = [method:DiscountPolicy#apply]
 ```
 
-## 反向路径
+这一步看起来平凡（就是一个区间查找），但它决定了影响面分析的全部下游。如果把粒度停在文件或行：
+
+```text
+文件级：改动了 DiscountPolicy.java → 影响面无限扩散到整个 pricing 模块
+行级：改动第 6 行 → 无法告诉下游这是方法体、字段还是注释
+实体级：改动 DiscountPolicy#apply → 精确锚定可反向遍历的起点
+```
+
+所以“diff 映射”的实质是：**把 diff 的坐标语言（文件+行）翻译成图谱的语言（实体 ID）**。一旦实体定错（比如映射到类而不是方法），反向路径和测试推荐就会集体跑偏——这就是“优先怀疑映射粗细，而不是先调风险权重”的原因。
+
+## 反向路径：为什么选“谁调用我”而不是“我调用谁”
+
+影响面关注的是**改动向上传播**：`apply` 改了，谁依赖它的结果？因此遍历方向是 `inbound（caller）`，而不是 `outbound（callee）`。
 
 ```text
 apply
@@ -62,6 +74,8 @@ def find_callers(graph, method_id, depth=5):
  return result
 ```
 
+深度要设上限（默认 5），因为真实调用图里反向遍历会指数膨胀。裁剪不是“偷懒”，而是**把路径总量压回可审规模**：报告写 `paths_shown=3, paths_total=42`，而不是伪称“完整枚举”。
+
 ## 测试关联
 
 ```text
@@ -69,7 +83,9 @@ tests_edge.to in affected_methods
 或 test 方法体候选调用命中 affected_methods
 ```
 
-## 风险规则（可解释）
+测试只有命中受影响方法才算相关；否则“测了但没测到变更路径”，绿测反而是绿灯假象。
+
+## 风险规则：分数必须能解释，否则就是新的黑盒
 
 ```text
 if touches_money_path: +2
@@ -78,7 +94,9 @@ if crosses_modules: +1
 if breaks_architecture_rule: +3
 ```
 
-`PR-42` 应为 medium，并给出 reasons。
+`PR-42` 应为 medium，并给出 reasons（触碰金额路径 +2、测试断言过期 +2、跨模块到 payment +1）。
+
+风险规则的可解释性是硬要求，不是加分项：如果只给一个数字，Reviewer 无法判断“该不该信”；给 reasons 后，争论就从“你凭什么叫 medium”变成“这条 reason 是否成立”。规则还**必须是可配置的**——不同团队的金额路径、测试策略、架构红线都不一样。一个写死在代码里的风险模型，会比没有模型更有害（它给人虚假的确定性）。
 
 ## 输出契约
 
@@ -130,10 +148,10 @@ flowchart TD
 
 ## 小结
 
-1. 影响面是可实现的确定性流水线。
-2. 关键在实体映射与调用反向遍历。
-3. 风险分数必须可解释。
-4. 输出要直接服务 PR 与 Agent 验证。
+1. 影响面是可实现的确定性流水线：diff → 实体 → 反向路径 → 测试 → 风险 → 报告。
+2. 关键在实体映射与调用反向遍历：实体定错，下游全部跑偏。
+3. 风险分数必须可解释：reasons + 可配置，否则就是新黑盒。
+4. 输出要直接服务 PR 与 Agent 验证：字段与金标 `impact-report-pr-42.json` 对齐。
 
 ## 端到端伪代码（可实现）
 

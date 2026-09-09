@@ -1,5 +1,14 @@
 # 版本与更新说明
 
+## 2026-07-22 — part6 实践章叙述纵深轮（弱势章改造）
+
+- `part6/build-code-graph.md`：新增“为什么不能只按名字匹配”失败推导（同名/接收者/自信错误三失败）、方法级 vs 文件级边对照实验（PR-42 影响面对比）、脏图比没图更危险、陈旧索引代价；中文字数 478→2114
+- `part6/query-interface-for-ai-agent.md`：新增“什么算一个工具”设计挣扎（工具边界跟消费端走、五工具闭环）、失败必须与空结果结构化区分（空影响面被 Agent 当成“无影响”）；921→1384
+- `part6/collect-source-structure.md`：扫描失败隔离的代价权衡、稳定 ID 身份≠行号≠路径展开、采集与建图切分（为什么留下不确定）；≈1000→1652
+- `part6/build-change-impact-analysis.md`：diff 映射“坐标语言→图谱语言”、反向路径为什么选 inbound、风险分数可解释性是硬要求；763→1281
+- 维持不动的章（已厚或角色适配）：build-visualization-ui（1443）、mini-code-understanding-system（1357 总览章）、ai-change-verification-report（1266 收尾章）
+- 方式：全部采用失败推导 + 对照实验 + 决策性叙述，未破坏 12 项结构要素；build/断链均过
+
 ## 2026-07-22 — AI 章节补 2026 图谱索引与独立验证（检索校正轮 · 续）
 
 - `part5/code-graph-for-ai-agent.md` 新增“仓库地图（Repo Map）：预计算的结构拓扑”节：repo map 概念与 ~1k token 紧凑投影、AGENTS.md 实证疑问（呼应 arXiv 论文）、语义索引 vs 图谱索引分工表（GitHub Copilot / Sourcegraph 官方实证）；补充 2 道练习、小结呼应
