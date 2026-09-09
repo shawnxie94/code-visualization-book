@@ -24,6 +24,8 @@
 | [rc-neo4j-modeling.md](rc-neo4j-modeling.md) | Graph modeling | part3, part6 |
 | [rc-sqlite.md](rc-sqlite.md) | SQLite | part6 |
 | [rc-test-impact.md](rc-test-impact.md) | Test Impact Analysis | part4, part6 |
+| [rc-context-engineering.md](rc-context-engineering.md) | Context engineering（Anthropic 方法论） | part5 |
+| [rc-context-rot.md](rc-context-rot.md) | Context rot（长上下文衰减） | part5 |
 
 ## 使用规则
 

@@ -177,8 +177,8 @@ start_column / end_column
  "receiver": "discountPolicy",
  "arguments": ["customerType", "amount"],
  "file_path": "src/main/java/com/minishop/pricing/PricingService.java",
- "start_line": 14,
- "end_line": 14
+ "start_line": 12,
+ "end_line": 12
 }
 ```
 
@@ -270,8 +270,8 @@ AST 不只是“读代码”的数据源，也能用于更安全的自动修改�
  "name": "calculateTotal",
  "qualified_name": "com.minishop.pricing.PricingService.calculateTotal",
  "file_path": "src/main/java/com/minishop/pricing/PricingService.java",
- "start_line": 11,
- "end_line": 16,
+ "start_line": 10,
+ "end_line": 15,
  "parameters": [
  {"name": "quantity", "type_text": "int"},
  {"name": "unitPrice", "type_text": "double"},
@@ -282,12 +282,12 @@ AST 不只是“读代码”的数据源，也能用于更安全的自动修改�
  {
  "method_name": "apply",
  "receiver_text": "discountPolicy",
- "line": 14
+ "line": 12
  },
  {
  "method_name": "println",
  "receiver_text": "System.out",
- "line": 15
+ "line": 13
  }
  ]
 }

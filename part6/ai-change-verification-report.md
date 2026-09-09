@@ -218,6 +218,6 @@ Markdown：
 - [SARIF](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)。资料卡：`../docs/research-cards/rc-sarif.md`
 - [GitHub PR comments API 概念](https://docs.github.com/en/rest/issues/comments)
 - [JUnit XML 报告生态](https://github.com/testmoapp/junitxml)
-- [CodeQL scanning](https://codeql.github.com/docs/codeql-overview/about-code-scanning-with-codeql/)
+- [GitHub: About code scanning](https://docs.github.com/en/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning)
 - [Test Impact Analysis](https://learn.microsoft.com/en-us/azure/devops/pipelines/test/test-impact-analysis)。资料卡：`../docs/research-cards/rc-test-impact.md`
 - 样例：[`verification-report-pr-42.md`](../examples/mini-shop/artifacts/verification-report-pr-42.md)

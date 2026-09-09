@@ -1,5 +1,19 @@
 # 版本与更新说明
 
+## 2026-07-22 — AI 章节补 2026 一手方法论（检索校正轮）
+
+- 全网检索后确认知识缺口：书内“上下文工程”原只讲内容/结构层（选什么、查什么、记轨迹），缺“上下文作为有限资源的管理”方法论层
+- `part5/agent-context-engineering.md` 新增“上下文是有限资源（2026 方法论）”节：context rot（含反证标注）、attention budget、compaction / structured note-taking / sub-agent、just-in-time context、progressive disclosure，并加 2 道练习、FAQ 扩 1 题、小结呼应
+- 新增资料卡 2 张：`rc-context-engineering.md`（Anthropic 官方）、`rc-context-rot.md`（Chroma 评测 + EMNLP 论文 + 反证，标注证据强度）；登记入索引
+- 术语表新增：context rot、compaction、structured note-taking、just-in-time context、sub-agent 架构
+- 依据：Anthropic “Effective context engineering for AI agents”（官方一手）、Chroma Context Rot 研究、EMNLP 2025 Findings、“Is Context Rot Real?”（反证）
+
+## 2026-07-22 — 数据契约与引用修正轮（内容一致性审校）
+
+- 修正 mini-shop 行号契约：`code-graph.json` 中 `PricingService.calculateTotal` 由 (11,16) 改为真实 (10,15)；`DiscountPolicy.apply` 由 (4,10) 改为真实 (4,9)；同步修正正文 `source-to-ast.md`、`collect-source-structure.md`、`query-interface-for-ai-agent.md`、`symbols-scopes-types.md` 与 `agent-context-pack.json` 中的方法区间和调用行（apply 调用=12 行、println=13 行）；全部 6 个方法行号经校验与源码一致
+- 替换 2 个失效外链：CodeQL 旧路径 → GitHub 官方 code scanning 文档（部分位置）；CodeScene 已删博文 → 官方 code health 页
+- 删除重复内容：`build-change-impact-analysis.md` 重复的影响面伪代码块；`collect-source-structure.md` “采集输出最小 JSON” 与“方法节点样例”职责说明合并、行号改对、`types.lines` 补真实文件名
+
 ## 2026-07-22 — 其余偏清单章叙述加厚（未推送）
 
 - 对 part1–part6 中仍偏清单的章节补充论述段落与工程判断

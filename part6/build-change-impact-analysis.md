@@ -183,21 +183,6 @@ def analyze(pr_diff, graph):
 4. 风险解释
 5. 报告契约
 
-## 影响面算法伪代码
-
-```text
-entities = map_diff_to_entities(diff, graph)
-seed = entities.ids
-paths = reverse_call_paths(seed, graph, max_depth=5)
-entries = paths.map(entry_point)
-tests = related_tests(seed ∪ paths.nodes)
-risk = score(entities, paths, tests, rules)
-emit report(entities, paths, tests, risk, actions)
-```
-
-金标检查：`PR-42` 报告中的 `changed_entities`、路径与 `examples/mini-shop/artifacts/impact-report-pr-42.json` 一致。
-
-
 ## 关键要点复盘
 
 围绕「构建变更影响分析」，读者离开本章前应能做到：

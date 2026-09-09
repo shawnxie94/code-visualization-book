@@ -67,6 +67,11 @@
 | CI | Continuous Integration |
 | ADR | Architecture Decision Record |
 | CPG | Code Property Graph |
+| context rot | 上下文腐烂：输入 token 增多导致模型对窗口内信息的准确回忆下降的现象；本书作为需管理的风险引用（证据存在反证） |
+| compaction | 压缩：长任务中将接近上限的历史总结进新窗口，保留决策与未决问题 |
+| structured note-taking | 结构化笔记 / agentic memory：Agent 把状态写入外部笔记（如 NOTES.md）按需重新读入，实现跨窗口记忆 |
+| just-in-time context | 即时上下文：只带轻量引用（路径/ID/查询），运行时用 glob/grep/图谱查询按需加载真实内容 |
+| sub-agent 架构 | 主 Agent 协调、子 Agent 各自探索并只回传浓缩摘要的上下文管理方式 |
 
 ## 模块与产物命名（实践一致）
 

@@ -201,7 +201,7 @@ AI PR 证据层建议固定字段，便于 CI 与 UI 共用：
 ## 延伸阅读与参考资料
 
 - [GitHub status checks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/about-status-checks)
-- [CodeQL code scanning](https://codeql.github.com/docs/codeql-overview/about-code-scanning-with-codeql/)
+- [GitHub: About code scanning](https://docs.github.com/en/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning)
 - [SARIF](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)。资料卡：`../docs/research-cards/rc-sarif.md`
 - [Codecov PR reporting](https://docs.codecov.com/docs)
 - [Test Impact Analysis](https://learn.microsoft.com/en-us/azure/devops/pipelines/test/test-impact-analysis)。资料卡：`../docs/research-cards/rc-test-impact.md`

@@ -58,10 +58,10 @@ ID 必须在多次采集间稳定，否则影响面与历史分析会断。
  "type": "method",
  "name": "calculateTotal",
  "file_path": "src/main/java/com/minishop/pricing/PricingService.java",
- "start_line": 11,
- "end_line": 16,
+ "start_line": 10,
+ "end_line": 15,
  "calls": [
- {"method_name": "apply", "receiver_text": "discountPolicy", "line": 14}
+ {"method_name": "apply", "receiver_text": "discountPolicy", "line": 12}
  ]
 }
 ```
@@ -177,17 +177,21 @@ flowchart TD
 
 若任一做不到，请先复习本章例子与练习，再继续向后读。
 
-## 采集输出最小 JSON
+## 采集合约（最小 JSON）
+
+把采集结果落成可机器消费的最小契约：
 
 ```json
 {
   "files": [{"path": "src/main/java/com/minishop/pricing/DiscountPolicy.java"}],
-  "types": [{"id": "class:DiscountPolicy", "file": "...", "lines": [1, 20]}],
-  "methods": [{"id": "method:DiscountPolicy#apply", "owner": "class:DiscountPolicy", "lines": [3, 10]}],
-  "candidate_calls": [{"from": "method:PricingService#calculateTotal", "name": "apply", "line": 13}],
+  "types": [{"id": "class:DiscountPolicy", "file": "src/main/java/com/minishop/pricing/DiscountPolicy.java", "lines": [3, 10]}],
+  "methods": [{"id": "method:DiscountPolicy#apply", "owner": "class:DiscountPolicy", "lines": [4, 9]}],
+  "candidate_calls": [{"from": "method:PricingService#calculateTotal", "name": "apply", "line": 12}],
   "tests": [{"id": "test:PricingServiceTest#shouldApplyVipDiscount"}]
 }
 ```
+
+与前面的“方法节点样例”相比，这个契约站在整包视角：文件、类型、方法、候选调用与测试一次给出。候选调用至少保留 `receiver_text`、`method_name`、`line`、`enclosing_method_id`，缺少位置信息的调用边几乎无法进入 Review 证据层。
 
 后续建图阶段再把 `candidate_calls` 提升为带 `resolves_to` 的 `calls` 边。采集阶段保留候选，避免过早丢信息。
 
@@ -207,6 +211,10 @@ flowchart TD
 ### ID 变了怎么办？
 
 显式迁移映射，禁止静默换 ID。
+
+### 稳定 ID 与行号是否可变？
+
+ID 不变，行号可变。多次采集间结构位置会漂移，行号只作证据锚点，不充当实体身份；身份靠 `method:...` 这类稳定 ID。
 
 ## 本章导航
 

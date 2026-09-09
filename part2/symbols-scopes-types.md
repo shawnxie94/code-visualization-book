@@ -130,8 +130,8 @@ Agent 若只搜索 `apply` 文本，可能误伤无关方法。更稳妥的上�
       "name": "apply",
       "owner": "class:DiscountPolicy",
       "file": "src/main/java/com/minishop/pricing/DiscountPolicy.java",
-      "start_line": 3,
-      "end_line": 10,
+      "start_line": 4,
+      "end_line": 9,
       "signature": "apply(String customerType, double amount) -> double"
     }
   ],
@@ -148,7 +148,7 @@ Agent 若只搜索 `apply` 文本，可能误伤无关方法。更稳妥的上�
       "id": "call:PricingService#calculateTotal->DiscountPolicy#apply",
       "name": "apply",
       "file": "src/main/java/com/minishop/pricing/PricingService.java",
-      "line": 13,
+      "line": 12,
       "resolves_to": "method:DiscountPolicy#apply",
       "confidence": "high",
       "receiver_type": "DiscountPolicy"

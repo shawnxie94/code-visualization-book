@@ -39,7 +39,7 @@ Agent 应该通过哪些结构化工具查询代码图谱？
  "id": "method:DiscountPolicy#apply",
  "file": "src/main/java/com/minishop/pricing/DiscountPolicy.java",
  "start_line": 4,
- "end_line": 10
+ "end_line": 9
  }
  ]
  }

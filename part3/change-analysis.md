@@ -225,7 +225,7 @@ attach related edges for downstream impact
 
 - [Git diff](https://git-scm.com/docs/git-diff)：行级变更输入。资料卡：`../docs/research-cards/rc-git-diff.md`
 - [Conventional Commits](https://www.conventionalcommits.org/)：提交语义化（可选增强）。
-- [CodeScene hotspots 概念](https://codescene.com/blog/hotspot-analysis/)：热点与演进可视化思路。
+- [CodeScene code health / hotspots 概念](https://codescene.com/code-health)：热点与演进可视化思路。
 - [GitHub pull request docs](https://docs.github.com/en/pull-requests)：PR 作为协作与检查载体。
 - [Software evolution / mining repositories 研究入口](https://ieeexplore.ieee.org/)（检索 MSR mining software repositories）。
 - 本书案例：[`examples/mini-shop/artifacts/pr-42.diff`](../examples/mini-shop/artifacts/pr-42.diff)。
