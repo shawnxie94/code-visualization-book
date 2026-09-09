@@ -245,6 +245,6 @@ Tests: PricingServiceTest, OrderServiceTest
 - [CodeQL Data Flow Analysis](https://codeql.github.com/docs/writing-codeql-queries/about-data-flow-analysis/)：数据流分析官方说明。资料卡：`../docs/research-cards/rc-codeql-dataflow.md`
 - [LLVM LangRef](https://llvm.org/docs/LangRef.html)：IR/SSA 工业参考。
 - [Static Program Analysis (Møller & Schwartzbach)](https://cs.au.dk/~amoeller/spa/)：静态分析教材级公开资源。
-- [Muchnick, Advanced Compiler Design & Implementation 概念](https://www.elsevier.com/books/advanced-compiler-design-implementation/muchnick/978-1-55860-320-2)：CFG/数据流经典背景。
+- [Muchnick, Advanced Compiler Design & Implementation 概念](https://www.amazon.com/Advanced-Compiler-Design-Implementation-Muchnick/dp/1558603204)：CFG/数据流经典背景。
 - [WALA / analysis frameworks overview](https://github.com/wala/WALA)：过程间分析工程参考。
 - 本书案例：[`examples/mini-shop/`](../examples/mini-shop/)。

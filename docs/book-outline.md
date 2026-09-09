@@ -84,11 +84,11 @@
 | 资产 | 路径 | 状态 |
 | --- | --- | --- |
 | 完成定义 | `docs/definition-of-done.md` | 已定义 RC |
-| 术语表 | `docs/glossary.md` | 待补全 |
-| 图示清单 | `docs/image-plan.md` | 待补全 |
-| 资料卡 | `docs/research-cards/` | 待建设 |
-| 贯穿案例 | `docs/sample-case/README.md` + `examples/mini-shop/` | 已有骨架 |
-| 部署说明 | `docs/github-pages-deploy.md` | 已有 |
+| 术语表 | `docs/glossary.md` | 已完成（61+ 词条，含 2026 新增术语） |
+| 图示清单 | `docs/image-plan.md` | 已完成（FIG-01..13 全部有对应文件） |
+| 资料卡 | `docs/research-cards/` | 已完成（22 张，字段齐全） |
+| 贯穿案例 | `docs/sample-case/README.md` + `examples/mini-shop/` | 已完成（源码 + 5 件 artifacts + PR-42 跟做） |
+| 部署说明 | `docs/github-pages-deploy.md` | 已有（本地优先） |
 
 
 ## 第一篇：代码可视化的目标与边界
