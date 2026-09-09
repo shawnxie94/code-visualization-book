@@ -72,6 +72,8 @@
 | structured note-taking | 结构化笔记 / agentic memory：Agent 把状态写入外部笔记（如 NOTES.md）按需重新读入，实现跨窗口记忆 |
 | just-in-time context | 即时上下文：只带轻量引用（路径/ID/查询），运行时用 glob/grep/图谱查询按需加载真实内容 |
 | sub-agent 架构 | 主 Agent 协调、子 Agent 各自探索并只回传浓缩摘要的上下文管理方式 |
+| repo map | 仓库地图：预先解析全仓符号、可放入 token 预算的紧凑拓扑（目录+关键符号签名），Agent 读文件前的方向感 |
+| 模型同源盲点 | Model Synchopathy：生成与审阅使用同源模型/假设时共享盲点，产物“看起来干净”但缺陷仍漏过；对策是独立验证 |
 
 ## 模块与产物命名（实践一致）
 

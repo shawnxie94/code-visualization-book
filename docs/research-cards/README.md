@@ -26,6 +26,8 @@
 | [rc-test-impact.md](rc-test-impact.md) | Test Impact Analysis | part4, part6 |
 | [rc-context-engineering.md](rc-context-engineering.md) | Context engineering（Anthropic 方法论） | part5 |
 | [rc-context-rot.md](rc-context-rot.md) | Context rot（长上下文衰减） | part5 |
+| [rc-repo-map.md](rc-repo-map.md) | Repo map 与混合索引 | part5, part6 |
+| [rc-independent-verification.md](rc-independent-verification.md) | 同源审阅盲点与独立验证 | part5, part6 |
 
 ## 使用规则
 

@@ -80,6 +80,21 @@ AI PR 的危险不在于模型会写错代码——人也会——而在于它�
 
 分级很重要。把所有信息平铺会制造新的疲劳；把提示级信息默认折叠，才能让阻断项和金额语义变化这类重要项被真正看见。`PR-42` 正好落在“重要”：业务值要人确认，但自动证据必须先把影响与测试说清。
 
+## 同源盲点与独立验证（2026 研究视角）
+
+2026 年出现一批针对“AI 审阅 AI”的研究，核心结论与本书证据层一致，且给出了更强表述：
+
+- **同源盲点（model synchopathy）**：生成修复的模型与批准它的审阅模型若来自同一家族/同一套假设，会共享盲点。产物“看起来干净、置信度很高”，但缺陷仍会漏过。社区甚至把原则写成：“AI 不应既写修复，又写批准它的测试。”
+- **独立修补验证（independent patch verification）**：已有框架（如 bidirectional reconstruct-and-verify）尝试脱离产生补丁时的解释，独立验证补丁是否真的解决问题——回应“同源审阅”的方法空缺。
+- **证据门禁（Proof-or-Stop 类方法）**：`reviewed` / `ready-to-merge` 这类生命周期状态本质是 claim，下游系统应只承认“有机械可验证证据支撑”的 claim；拿不出证据的节点不放行。
+
+> 证据强度说明：以上多来自预印本与早期工程实践（arXiv/工程博客），尚未形成稳定共识。本书引用它们是为了强调“同源审阅不可靠”这一风险，不把它们当成已被大规模验证的定论。
+
+对证据层的落地含义：
+
+1. **审阅模型 ≠ 生成模型**：至少让阻断级判断由不同假设的模型或确定性检查（图谱/测试/规则）完成
+2. **把“验证”做成独立阶段**：不是 Agent 自述“我测过了”，而是 CI 执行并产出可回跳的产物
+3. **生命周期门禁化**：缺证据就不允许从 `in_review` 进入 `mergeable`，而不是靠“相信状态字段”
 
 ## 局限
 
@@ -93,6 +108,7 @@ AI PR 的危险不在于模型会写错代码——人也会——而在于它�
 2. 证据必须来自可复现查询与检查。
 3. 报告要服务 Reviewer 决策，而不是炫技。
 4. 人工仍负责业务与例外判断。
+5. 同源审阅有盲点：独立验证（不同模型或确定性检查）是证据层的必要一环，而非可选优化。
 
 ## 进阶要点：证据分级
 
@@ -191,6 +207,7 @@ AI PR 证据层建议固定字段，便于 CI 与 UI 共用：
 1. 用 PR-42 填完整证据清单 6 项。
 2. 把模型说明“无风险”改写成必须附带的系统证据段落。
 3. 设计 CI 门禁：哪些证据缺失应 block merge。
+4. 论证为什么“同一模型既生成修复又审阅”不可靠，并给 mini-shop 设计一个独立验证步骤。
 
 ## 本章导航
 
@@ -205,4 +222,7 @@ AI PR 证据层建议固定字段，便于 CI 与 UI 共用：
 - [SARIF](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)。资料卡：`../docs/research-cards/rc-sarif.md`
 - [Codecov PR reporting](https://docs.codecov.com/docs)
 - [Test Impact Analysis](https://learn.microsoft.com/en-us/azure/devops/pipelines/test/test-impact-analysis)。资料卡：`../docs/research-cards/rc-test-impact.md`
+- [Independent Patch Verification（bidirectional reconstruct-and-verify）](https://arxiv.org/html/2608.08950)：同源审阅问题与独立验证框架（预印本）。
+- [Proof-or-Stop: Evidence-gated lifecycle control](https://arxiv.org/html/2607.14890v1)：生命周期状态需要机械可验证证据（预印本）。
+- [LLM Code Reviews Miss Architectural Problems in 87% of Cases](https://clawrxiv.io/abs/2604.01289)：24k+ 实例实证（预印本）。
 - 本书样例：[`verification-report-pr-42.md`](../examples/mini-shop/artifacts/verification-report-pr-42.md)。

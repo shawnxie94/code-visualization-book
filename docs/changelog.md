@@ -1,5 +1,13 @@
 # 版本与更新说明
 
+## 2026-07-22 — AI 章节补 2026 图谱索引与独立验证（检索校正轮 · 续）
+
+- `part5/code-graph-for-ai-agent.md` 新增“仓库地图（Repo Map）：预计算的结构拓扑”节：repo map 概念与 ~1k token 紧凑投影、AGENTS.md 实证疑问（呼应 arXiv 论文）、语义索引 vs 图谱索引分工表（GitHub Copilot / Sourcegraph 官方实证）；补充 2 道练习、小结呼应
+- `part5/ai-code-review-evidence.md` 新增“同源盲点与独立验证（2026 研究视角）”节：model synchopathy 概念、独立修补验证框架、Proof-or-Stop 证据门禁、LLM 审阅漏架构问题实证；补充 1 道练习、小结呼应
+- 新增资料卡 2 张：`rc-repo-map.md`、`rc-independent-verification.md`；登记入索引
+- 术语表新增：repo map、模型同源盲点（Model Synchopathy）
+- 依据：Aider repo map、GitHub Copilot repository indexing、Sourcegraph Deep Search/Precise Code Navigation（官方实证）；arXiv 预印本（Independent Patch Verification、Proof-or-Stop、AGENTS.md 评估、LLM 审阅漏架构 87%）——新研究中预印本部分均标注证据强度
+
 ## 2026-07-22 — AI 章节补 2026 一手方法论（检索校正轮）
 
 - 全网检索后确认知识缺口：书内“上下文工程”原只讲内容/结构层（选什么、查什么、记轨迹），缺“上下文作为有限资源的管理”方法论层
