@@ -1,5 +1,13 @@
 # 版本与更新说明
 
+## 2026-09-09 — 公开站点上线（E006 关闭，RC 完成）
+
+- 启用 GitHub Pages（Actions 源）并部署成功：https://shawnxie94.github.io/code-visualization-book/
+- 首次部署失败根因：Pages 未在仓库启用（deploy 步骤 404）；启用后 workflow_dispatch 立即成功
+- 抽检：首页/three 样章页/glossary/changelog 全部 200；线上内容验证为最新（行号 10/15、context rot 新节已上线）
+- README 更新：新站为主地址，旧 GitBook 站保留为历史
+- 关闭 E006，更新 rc-completion-log 与 definition-of-done §12；可宣布出版级终稿（RC）
+
 ## 2026-07-22 — 全书快速终检（链接与状态清理）
 
 - `docs/book-outline.md`：修正附录资产状态为已完成（术语表 61+ 词条、图示清单 FIG-01..13、资料卡 22 张、贯穿案例源码 + 5 artifacts），删除过时的“待补全/待建设/已有骨架”

@@ -2,7 +2,8 @@
 
 最新阅读地址：
 
-- 当前公开站点（旧版 GitBook，待同步本仓库 RC 内容）：[code-visualization.shawnxie.top](https://code-visualization.shawnxie.top/)
+- **当前公开站点（本仓库 RC 内容，GitHub Pages）**：[shawnxie94.github.io/code-visualization-book](https://shawnxie94.github.io/code-visualization-book/)
+- 旧版站点（历史版本，GitBook）：[code-visualization.shawnxie.top](https://code-visualization.shawnxie.top/)
 - 本地预览（本仓库最新）：`npm run serve` → http://localhost:4000/
 - 部署说明：[`docs/github-pages-deploy.md`](docs/github-pages-deploy.md)
 

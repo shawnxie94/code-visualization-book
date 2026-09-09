@@ -13,7 +13,7 @@ npm run serve
 
 构建产物目录：`_book/`。
 
-本地预览是当前确认 RC 内容的权威方式。远端发布需作者明确授权后再执行。
+本地预览与公开维护并用的方式：`npm run serve` 用于预览最新工作树，公开站点由 GitHub Pages 自动发布 `main` 分支。
 
 ## GitHub Pages（GitHub Actions）
 
@@ -34,7 +34,7 @@ npm run serve
 
 - `https://<user>.github.io/code-visualization-book/`
 
-## 发布前检查
+## 发布后检查
 
 1. `npm run build` 成功
 2. `SUMMARY.md` 与正文链接全部有效
@@ -43,12 +43,12 @@ npm run serve
    - `/part2/source-to-ast.html`
    - `/part4/change-impact-verification.html`
    - `/part5/agent-context-engineering.html`
-5. 对照 [`definition-of-done.md`](definition-of-done.md) 第 12 节，确认 E006（公开同步）可关闭
+5. 若改动影响数据契约（行号/实体 ID），对照 `.github/workflows/deploy-pages.yml` 部署后抽查对应页面内容新鲜度
 
 ## 历史/其他地址
 
-- 旧 GitBook / 历史域名若仍可访问，可能不是本仓库最新 RC 文稿，发布后应以本仓库 Pages（或你指定的等价地址）为准。
-- 在公开同步完成前，请以本地 `npm run serve` 阅读最新内容。
+- 旧 GitBook 站点（code-visualization.shawnxie.top）保存历史版本，可能落后于本仓库 RC 文稿；当前以 GitHub Pages（或等价地址）为准。
+- 阅读最新内容：公开使用 GitHub Pages，工作树未推送内容用 `npm run serve`。
 
 ## 手动部署（可选）
 
